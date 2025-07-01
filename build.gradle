@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version "$springboot"
+    id 'io.spring.dependency-management' version "$springdependency"
+}
+
+group = 'cl.tenpo'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '21'
+}
+
+springBoot {
+    mainClass = 'cl.tenpo.learning.reactive.tasks.task2.T2Application'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-webflux')
+    implementation (group: 'org.springframework.boot', name:'spring-boot-starter-data-r2dbc')
+    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-data-mongodb-reactive')
+    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-data-redis-reactive')
+    implementation (group: 'org.springframework.kafka', name: 'spring-kafka')
+    implementation (group: 'io.projectreactor.kafka', name:'reactor-kafka', version: "$kafka")
+
+    implementation (group: 'net.datafaker', name: 'datafaker', version: "$faker")
+    implementation (group: 'ch.qos.logback', name: 'logback-classic')
+
+    runtimeOnly (group: 'org.postgresql', name: 'postgresql')
+    runtimeOnly (group: 'org.postgresql', name: 'r2dbc-postgresql')
+
+    compileOnly (group: 'org.projectlombok', name: 'lombok')
+    annotationProcessor (group: 'org.projectlombok', name: 'lombok')
+
+    testImplementation (group: 'org.springframework.boot', name:'spring-boot-starter-test')
+    testImplementation (group: 'de.flapdoodle.embed', name: 'de.flapdoodle.embed.mongo', version: "$embeddedMongo")
+    testImplementation (group: 'com.github.codemonstur', name: 'embedded-redis', version: "$embeddedRedis")
+    testImplementation (group: 'io.projectreactor', name: 'reactor-test')
+
+}
+
+test {
+    useJUnitPlatform()
+    //exclude 'cl/tenpo/learning/reactive/tasks/task1/**'
+}

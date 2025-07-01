@@ -1,0 +1,33 @@
+<configuration>
+
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
+    <logger name="cl.tenpo" level="INFO"/>
+    <logger name="org.apache" level="ERROR"/>
+    <logger name="org.springframework" level="ERROR"/>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNC"/>
+    </root>
+
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                [%thread] %d{yyyy-MM-dd HH:mm:ss} %highlight(%-5level) %cyan(%logger{15}) - %msg %n
+            </pattern>
+            <highlight>
+                <color>TRACE=WHITE</color>
+                <color>DEBUG=GREEN</color>
+                <color>INFO=GREEN</color>
+                <color>WARN=YELLOW</color>
+                <color>ERROR=RED</color>
+            </highlight>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>

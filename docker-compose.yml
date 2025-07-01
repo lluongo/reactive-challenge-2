@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  zookeeper-luongo:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  postgres-luongo:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgresql
+      - POSTGRES_PASSWORD=postgresql
+      - POSTGRES_DB=learning_reactive_r2dbc
+    ports:
+      - "5432:5432"
+  mongodb-luongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=learning_reactive_mongo
+      - MONGO_INITDB_ROOT_USERNAME=mongodb
+      - MONGO_INITDB_ROOT_PASSWORD=mongodb
+  redis-luongo:
+    image: 'redis:latest'
+    ports:
+      - "6379:6379"
+  kafka-luongo:
+    image: wurstmeister/kafka
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper-luongo:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka-luongo:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    depends_on:
+      - zookeeper-luongo
+  api-luongo:
+    environment:
+      - APPLICATION_PORT=8083
+      - POSTGRES_USER=postgresql
+      - POSTGRES_PASS=postgresql
+      - POSTGRES_HOST=postgres-luongo
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB_NAME=learning_reactive_r2dbc
+      - MONGO_USER=mongodb
+      - MONGO_PASS=mongodb
+      - MONGO_HOST=mongodb-luongo:27017
+      - MONGO_DB_NAME=learning_reactive_mongo
+      - REDIS_HOST=redis-luongo
+      - REDIS_PORT=6379
+      - KAFKA_HOST=kafka-luongo:9092
+      - KAFKA_SECURITY_PROTOCOL=PLAINTEXT
+    build: .
+    ports:
+      - "8083:8083"
+    depends_on:
+      - postgres-luongo
+      - mongodb-luongo
+      - redis-luongo
+      - kafka-luongo
