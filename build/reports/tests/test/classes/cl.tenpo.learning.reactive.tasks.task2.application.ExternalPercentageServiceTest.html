@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - ExternalPercentageServiceTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>ExternalPercentageServiceTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/cl.tenpo.learning.reactive.tasks.task2.application.html">cl.tenpo.learning.reactive.tasks.task2.application</a> &gt; ExternalPercentageServiceTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">3</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">8.067s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard output</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">getPercentage_whenCacheEmptyAndApiFails_shouldThrowServiceUnavailableException()</td>
+<td class="success">7.824s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">getPercentage_whenCacheEmptyAndApiSucceeds_shouldFetchFromApiAndCache()</td>
+<td class="success">0.003s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">getPercentage_whenCacheEmpty_shouldFetchFromApi()</td>
+<td class="success">0.240s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Fetching percentage from external API 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Received percentage from external API: 0.2 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Caching percentage value: 0.2 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onNext(0.2) 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onComplete() 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Fetching percentage from external API 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Received percentage from external API: 0.15 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Caching percentage value: 0.15 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onNext(0.15) 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onComplete() 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Fetching percentage from external API 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
+[Test worker] 2025-07-02 18:33:25 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
+[parallel-1] 2025-07-02 18:33:26 ?[31mWARN ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Retry attempt 1: API Error 
+[parallel-3] 2025-07-02 18:33:29 ?[31mWARN ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Retry attempt 2: API Error 
+[parallel-5] 2025-07-02 18:33:33 ?[31mWARN ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Retry attempt 3: API Error 
+[parallel-5] 2025-07-02 18:33:33 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Failed to fetch percentage after 3 attempts 
+[parallel-5] 2025-07-02 18:33:33 ?[1;31mERROR?[0;39m ?[36mexternal-percentage-service?[0;39m - onError(cl.tenpo.learning.reactive.tasks.task2.infrastructure.exception.ServiceUnavailableException: Failed to fetch percentage after 3 attempts) 
+[parallel-5] 2025-07-02 18:33:33 ?[1;31mERROR?[0;39m ?[36mexternal-percentage-service?[0;39m -  
+cl.tenpo.learning.reactive.tasks.task2.infrastructure.exception.ServiceUnavailableException: Failed to fetch percentage after 3 attempts
+	at cl.tenpo.learning.reactive.tasks.task2.application.ExternalPercentageService.lambda$fetchAndCachePercentage$4(ExternalPercentageService.java:103)
+	at reactor.util.retry.RetryBackoffSpec.lambda$null$4(RetryBackoffSpec.java:560)
+	at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.onNext(FluxConcatMapNoPrefetch.java:183)
+	at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+	at reactor.core.publisher.SinkManyEmitterProcessor.drain(SinkManyEmitterProcessor.java:476)
+	at reactor.core.publisher.SinkManyEmitterProcessor$EmitterInner.drainParent(SinkManyEmitterProcessor.java:620)
+	at reactor.core.publisher.FluxPublish$PubSubInner.request(FluxPublish.java:874)
+	at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+	at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.innerComplete(FluxConcatMapNoPrefetch.java:275)
+	at reactor.core.publisher.FluxConcatMap$ConcatMapInner.onComplete(FluxConcatMap.java:889)
+	at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onComplete(FluxContextWrite.java:126)
+	at reactor.core.publisher.MonoFlatMap$FlatMapMain.secondComplete(MonoFlatMap.java:246)
+	at reactor.core.publisher.MonoFlatMap$FlatMapInner.onNext(MonoFlatMap.java:305)
+	at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.complete(MonoIgnoreThen.java:294)
+	at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onNext(MonoIgnoreThen.java:188)
+	at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.subscribeNext(MonoIgnoreThen.java:237)
+	at reactor.core.publisher.MonoIgnoreThen.subscribe(MonoIgnoreThen.java:51)
+	at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:165)
+	at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.complete(MonoIgnoreThen.java:294)
+	at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onNext(MonoIgnoreThen.java:188)
+	at reactor.core.publisher.MonoDelay$MonoDelayRunnable.propagateDelay(MonoDelay.java:270)
+	at reactor.core.publisher.MonoDelay$MonoDelayRunnable.run(MonoDelay.java:285)
+	at reactor.core.scheduler.SchedulerTask.call(SchedulerTask.java:68)
+	at reactor.core.scheduler.SchedulerTask.call(SchedulerTask.java:28)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 8.10.1</a> at 2 jul 2025 18:33:38</p>
+</div>
+</div>
+</body>
+</html>

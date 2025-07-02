@@ -8,8 +8,8 @@ import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
 @EnableR2dbcRepositories
 @EnableReactiveMongoRepositories
-@ComponentScan(basePackages = "cl.tenpo.learning.reactive")
 @SpringBootApplication
+@ComponentScan({"cl.tenpo.learning.reactive.tasks.task2", "cl.tenpo.learning.reactive.utils"})
 public class T2Application {
 
     public static void main(String[] args) {

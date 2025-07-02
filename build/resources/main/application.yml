@@ -2,6 +2,8 @@ server:
   port: ${APPLICATION_PORT}
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   webflux:
     base-path: /learning-reactive
   r2dbc:
@@ -39,3 +41,10 @@ spring:
             add:
               type:
                 headers: false
+
+# Configuraciones personalizadas de la aplicación
+app:
+  timeouts:
+    external-api-timeout: PT20S  # 20 segundos
+    cache-timeout: PT5S          # 5 segundos
+    database-timeout: PT10S      # 10 segundos
