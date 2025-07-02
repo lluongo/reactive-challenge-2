@@ -3,6 +3,7 @@ package cl.tenpo.learning.reactive.tasks.task2.infrastructure.filter;
 import cl.tenpo.learning.reactive.tasks.task2.application.CallHistoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -13,6 +14,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -24,71 +26,50 @@ public class RequestLoggingFilter implements WebFilter {
     private final CallHistoryService callHistoryService;
     private final ObjectMapper objectMapper;
     
-    private static final List<String> EXCLUDED_PATHS = List.of("/actuator", "/swagger", "/v3/api-docs");
+    // Lista de rutas excluidas del logging
+    private final List<String> excludedPaths = Arrays.asList("/actuator", "/swagger", "/v3/api-docs");
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getPath().value();
+        String method = request.getMethod().name();
         
         // Skip logging for excluded paths
-        if (EXCLUDED_PATHS.stream().anyMatch(path::startsWith)) {
+        if (shouldExcludePath(path)) {
             return chain.filter(exchange);
         }
 
-        log.debug("Incoming request: {} {}", request.getMethod(), path);
+        log.info("Incoming request: {} {}", method, path);
+
+        // Replace the exchange with a wrapper that captures the response
+        ResponseCaptureExchange responseCapture = new ResponseCaptureExchange(exchange);
         
-        // Create a decorator to capture the response
-        ResponseCaptureExchange decoratedExchange = new ResponseCaptureExchange(exchange);
-        
-        return chain.filter(decoratedExchange)
-                .doOnSuccess(v -> {
-                    try {
-                        // Get captured request and response data
-                        String requestBody = decoratedExchange.getRequestBody();
-                        String responseBody = decoratedExchange.getResponseBody();
-                        int statusCode = decoratedExchange.getStatusCode();
-                        
-                        log.debug("Response for {} {}: status={}, body={}", 
-                                request.getMethod(), path, statusCode, responseBody);
-                        
-                        // Record the successful request
-                        if (statusCode >= 200 && statusCode < 300) {
-                            callHistoryService.recordSuccessfulRequest(
-                                    path,
-                                    request.getMethod().name(),
-                                    requestBody,
-                                    responseBody)
-                                    .subscribe();
-                        } else {
-                            callHistoryService.recordFailedRequest(
-                                    path,
-                                    request.getMethod().name(),
-                                    requestBody, 
-                                    "HTTP Status: " + statusCode + ", Response: " + responseBody)
-                                    .subscribe();
-                        }
-                    } catch (Exception e) {
-                        log.error("Error recording request history", e);
-                    }
-                })
-                .doOnError(error -> {
-                    try {
-                        String requestBody = decoratedExchange.getRequestBody();
-                        
-                        log.error("Error processing request {} {}: {}", 
-                                request.getMethod(), path, error.getMessage());
-                        
-                        // Record the failed request
-                        callHistoryService.recordFailedRequest(
-                                path,
-                                request.getMethod().name(),
-                                requestBody,
-                                error.getMessage())
-                                .subscribe();
-                    } catch (Exception e) {
-                        log.error("Error recording request history", e);
-                    }
-                });
+        return chain.filter(responseCapture)
+                .then(Mono.defer(() -> {
+                    int statusCode = responseCapture.getResponse().getStatusCode() != null 
+                        ? responseCapture.getResponse().getStatusCode().value() 
+                        : 200;
+                    
+                    String responseBody = responseCapture.getResponseBody();
+                    String requestBody = responseCapture.getRequestBody();
+                    log.info("Response status: {} for {} {}", statusCode, method, path);
+                    
+                    return recordRequest(path, method, requestBody, responseBody, statusCode);
+                }));
+    }
+
+    private boolean shouldExcludePath(String path) {
+        return excludedPaths.stream().anyMatch(path::startsWith);
+    }
+
+    @SneakyThrows
+    private Mono<Void> recordRequest(String endpoint, String method, String parameters, String response, int statusCode) {
+        // Record successful request if status code is 2xx
+        if (statusCode >= 200 && statusCode < 300) {
+            return callHistoryService.recordSuccessfulRequest(endpoint, method, parameters, response).then();
+        } else {
+            return callHistoryService.recordFailedRequest(endpoint, method, parameters, response).then();
+        }
     }
 }

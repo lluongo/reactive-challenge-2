@@ -6,6 +6,7 @@ import cl.tenpo.learning.reactive.tasks.task2.infrastructure.event.RetryExhauste
 import cl.tenpo.learning.reactive.tasks.task2.infrastructure.exception.ServiceUnavailableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ public class ExternalPercentageService {
     private final ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
     private final ApplicationEventPublisher eventPublisher;
     private final TimeoutConfig timeoutConfig;
+    
+    @Value("${app.api.external.base-url}${app.api.external.percentage-path}")
+    private String percentagePath;
 
     /**
      * Obtiene el porcentaje a aplicar en los cálculos.
@@ -79,9 +83,9 @@ public class ExternalPercentageService {
      * Obtiene el porcentaje del API externo y lo guarda en caché.
      */
     private Mono<BigDecimal> fetchAndCachePercentage() {
-        log.info("Fetching percentage from external API");
+        log.info("Fetching percentage from external API: {}", percentagePath);
         return webClient.get()
-                .uri("/external-api/percentage")
+                .uri(percentagePath)
                 .retrieve()
                 .bodyToMono(Map.class)
                 .timeout(timeoutConfig.getExternalApiTimeout())

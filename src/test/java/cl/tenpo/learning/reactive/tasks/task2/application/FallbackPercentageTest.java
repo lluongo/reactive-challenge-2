@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveValueOperations;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -61,6 +62,7 @@ public class FallbackPercentageTest {
     private ArgumentCaptor<Object> eventCaptor;
 
     private ExternalPercentageService percentageService;
+    private static final String PERCENTAGE_PATH = "/external-api/percentage";
 
     @BeforeEach
     void setUp() {
@@ -68,6 +70,7 @@ public class FallbackPercentageTest {
         when(timeoutConfig.getCacheTimeout()).thenReturn(Duration.ofSeconds(5));
         
         percentageService = new ExternalPercentageService(webClient, reactiveRedisTemplate, eventPublisher, timeoutConfig);
+        ReflectionTestUtils.setField(percentageService, "percentagePath", PERCENTAGE_PATH);
         when(reactiveRedisTemplate.opsForValue()).thenReturn(valueOps);
     }
 
@@ -78,7 +81,7 @@ public class FallbackPercentageTest {
         
         // Configurar que el API externo falle
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersUriSpec.uri(eq(PERCENTAGE_PATH))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(Map.class)).thenReturn(
             Mono.error(WebClientResponseException.create(500, "Server Error", null, null, null))

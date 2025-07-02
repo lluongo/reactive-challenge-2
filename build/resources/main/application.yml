@@ -42,9 +42,32 @@ spring:
               type:
                 headers: false
 
-# Configuraciones personalizadas de la aplicación
 app:
   timeouts:
-    external-api-timeout: PT20S  # 20 segundos
-    cache-timeout: PT5S          # 5 segundos
-    database-timeout: PT10S      # 10 segundos
+    external-api-timeout: PT20S
+    cache-timeout: PT5S
+    database-timeout: PT10S
+  
+  api:
+    endpoints:
+      calculation: "/v1/calculation"
+      users: "/v1/users"
+      debug: "/debug"
+      debug-routes: "/routes"
+      debug-ping: "/ping"
+      debug-clear-cache: "/clear-cache"
+    
+    external:
+      base-url: "/external-api"
+      percentage-path: "/percentage"
+  
+  kafka:
+    topics:
+      retry-exhausted: "CR_RETRY_EXHAUSTED"
+  
+  filters:
+    logging:
+      excluded-paths:
+        - "/actuator"
+        - "/swagger"
+        - "/v3/api-docs"

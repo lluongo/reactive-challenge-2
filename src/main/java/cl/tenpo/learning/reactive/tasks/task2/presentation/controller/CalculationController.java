@@ -8,6 +8,7 @@ import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.CalculationRespon
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,11 +22,13 @@ import reactor.util.context.Context;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/calculation")
 public class CalculationController {
 
     private final CalculationService calculationService;
     private final CallHistoryService callHistoryService;
+    
+    @Value("${app.api.endpoints.calculation}")
+    private String calculationEndpoint;
 
     /**
      * Realiza un cálculo sumando dos números y aplicando un porcentaje
@@ -35,7 +38,7 @@ public class CalculationController {
      * @param exchange Intercambio de información HTTP
      * @return DTO con el resultado del cálculo
      */
-    @PostMapping("")
+    @PostMapping("${app.api.endpoints.calculation}")
     public Mono<CalculationResponse> calculate(
             @Valid @RequestBody CalculationRequest calculationRequest,
             ServerWebExchange exchange) {
@@ -63,7 +66,7 @@ public class CalculationController {
      * @param size tamaño de la página
      * @return Flux con el historial de llamadas
      */
-    @GetMapping("")
+    @GetMapping("${app.api.endpoints.calculation}")
     public Flux<CallHistory> callHistory(
             @RequestParam(defaultValue = "0") int page, 
             @RequestParam(defaultValue = "10") int size) {

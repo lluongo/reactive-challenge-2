@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="cl.tenpo.learning.reactive.tasks.task2.application.FallbackPercentageTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-07-02T21:33:33" hostname="LUCLUO0225M" time="5.328">
+<testsuite name="cl.tenpo.learning.reactive.tasks.task2.application.FallbackPercentageTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-07-02T21:59:46" hostname="LUCLUO0225M" time="6.745">
   <properties/>
-  <testcase name="testExternalServiceFailure_shouldThrowServiceUnavailableException()" classname="cl.tenpo.learning.reactive.tasks.task2.application.FallbackPercentageTest" time="5.328"/>
-  <system-out><![CDATA[[Test worker] 2025-07-02 18:33:33 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Fetching percentage from external API 
-[Test worker] 2025-07-02 18:33:33 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
-[Test worker] 2025-07-02 18:33:33 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
-[parallel-1] 2025-07-02 18:33:34 ?[31mWARN ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Retry attempt 1: 500 Server Error 
-[parallel-3] 2025-07-02 18:33:36 ?[31mWARN ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Retry attempt 2: 500 Server Error 
-[parallel-5] 2025-07-02 18:33:38 ?[31mWARN ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Retry attempt 3: 500 Server Error 
-[parallel-5] 2025-07-02 18:33:38 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Failed to fetch percentage after 3 attempts 
-[parallel-5] 2025-07-02 18:33:38 ?[1;31mERROR?[0;39m ?[36mexternal-percentage-service?[0;39m - onError(cl.tenpo.learning.reactive.tasks.task2.infrastructure.exception.ServiceUnavailableException: Failed to fetch percentage after 3 attempts) 
-[parallel-5] 2025-07-02 18:33:38 ?[1;31mERROR?[0;39m ?[36mexternal-percentage-service?[0;39m -  
+  <testcase name="testExternalServiceFailure_shouldThrowServiceUnavailableException()" classname="cl.tenpo.learning.reactive.tasks.task2.application.FallbackPercentageTest" time="6.745"/>
+  <system-out><![CDATA[[Test worker] 2025-07-02 18:59:46 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Fetching percentage from external API: /external-api/percentage 
+[Test worker] 2025-07-02 18:59:46 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
+[Test worker] 2025-07-02 18:59:46 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
+[parallel-1] 2025-07-02 18:59:48 ?[31mWARN ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Retry attempt 1: 500 Server Error 
+[parallel-3] 2025-07-02 18:59:49 ?[31mWARN ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Retry attempt 2: 500 Server Error 
+[parallel-5] 2025-07-02 18:59:53 ?[31mWARN ?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Retry attempt 3: 500 Server Error 
+[parallel-5] 2025-07-02 18:59:53 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - Failed to fetch percentage after 3 attempts 
+[parallel-5] 2025-07-02 18:59:53 ?[1;31mERROR?[0;39m ?[36mexternal-percentage-service?[0;39m - onError(cl.tenpo.learning.reactive.tasks.task2.infrastructure.exception.ServiceUnavailableException: Failed to fetch percentage after 3 attempts) 
+[parallel-5] 2025-07-02 18:59:53 ?[1;31mERROR?[0;39m ?[36mexternal-percentage-service?[0;39m -  
 cl.tenpo.learning.reactive.tasks.task2.infrastructure.exception.ServiceUnavailableException: Failed to fetch percentage after 3 attempts
-	at cl.tenpo.learning.reactive.tasks.task2.application.ExternalPercentageService.lambda$fetchAndCachePercentage$4(ExternalPercentageService.java:103)
+	at cl.tenpo.learning.reactive.tasks.task2.application.ExternalPercentageService.lambda$fetchAndCachePercentage$4(ExternalPercentageService.java:107)
 	at reactor.util.retry.RetryBackoffSpec.lambda$null$4(RetryBackoffSpec.java:560)
 	at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.onNext(FluxConcatMapNoPrefetch.java:183)
 	at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)

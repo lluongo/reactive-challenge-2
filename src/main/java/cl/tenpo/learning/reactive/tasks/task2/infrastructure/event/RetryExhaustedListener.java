@@ -1,5 +1,6 @@
 package cl.tenpo.learning.reactive.tasks.task2.infrastructure.event;
 
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.KafkaConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -13,19 +14,18 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class RetryExhaustedListener {
 
-    private static final String CR_RETRY_EXHAUSTED_TOPIC = "CR_RETRY_EXHAUSTED";
-    private final ReactiveKafkaProducerTemplate<String, Map<String, String>> kafkaProducerTemplate;
+    private final ReactiveKafkaProducerTemplate<String, Map<String, String>> kafkaTemplate;
+    private final KafkaConfig kafkaConfig;
 
     @EventListener
     public void handleRetryExhaustedEvent(RetryExhaustedEvent event) {
         log.error("Retry exhausted event received: {}", event.getErrorData());
-        
-        // Send message to Kafka topic
-        kafkaProducerTemplate.send(
-                CR_RETRY_EXHAUSTED_TOPIC,
-                event.getErrorData())
-                .doOnSuccess(senderResult -> log.info("Message sent to topic: {}", CR_RETRY_EXHAUSTED_TOPIC))
-                .doOnError(error -> log.error("Failed to send message to Kafka", error))
+        kafkaTemplate.send(
+                kafkaConfig.getRetryExhaustedTopic(),
+                event.getErrorData()
+        )
+                .doOnSuccess(senderResult -> log.info("Message sent to topic: {}", kafkaConfig.getRetryExhaustedTopic()))
+                .doOnError(e -> log.error("Error sending message to Kafka: {}", e.getMessage()))
                 .subscribe();
     }
 }

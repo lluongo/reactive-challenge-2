@@ -1,39 +1,49 @@
 package cl.tenpo.learning.reactive.tasks.task2.infrastructure.event;
 
 import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.KafkaConfig;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate;
 import org.springframework.stereotype.Component;
-import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.kafka.receiver.ReceiverRecord;
 
-import java.util.Map;
+import java.time.Duration;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class RetryExhaustedConsumer {
 
-    private final ReactiveKafkaConsumerTemplate<String, Map<String, String>> kafkaConsumerTemplate;
-    private Disposable subscription;
-
-    public RetryExhaustedConsumer(ReactiveKafkaConsumerTemplate<String, Map<String, String>> kafkaConsumerTemplate) {
-        this.kafkaConsumerTemplate = kafkaConsumerTemplate;
-    }
+    private final ReactiveKafkaConsumerTemplate<Object, Object> reactiveKafkaConsumerTemplate;
+    private final KafkaConfig kafkaConfig;
 
     @EventListener(ApplicationStartedEvent.class)
-    public void startKafkaConsumer() {
-        log.info("Starting Kafka consumer for {} topic", KafkaConfig.CR_RETRY_EXHAUSTED_TOPIC);
-        
-        Flux<ReceiverRecord<String, Map<String, String>>> flux = kafkaConsumerTemplate.receive();
-        
-        subscription = flux.doOnNext(record -> {
-                    log.error("Retry exhausted event received: {}", record.value().get("error"));
+    public void consume() {
+        log.info("Starting Kafka consumer for {} topic", kafkaConfig.getRetryExhaustedTopic());
+
+        Flux<ReceiverRecord<Object, Object>> kafkaFlux = reactiveKafkaConsumerTemplate.receive();
+
+        kafkaFlux.doOnNext(record -> {
+                    ConsumerRecord<Object, Object> kafkaRecord = record.receiverOffset().topicPartition().topic()
+                            .equals(kafkaConfig.getRetryExhaustedTopic()) ? record : null;
+                    
+                    if (kafkaRecord != null) {
+                        log.info("Received message from topic {}: {}", 
+                                kafkaConfig.getRetryExhaustedTopic(), 
+                                kafkaRecord.value());
+                        
+                        // Process message logic here
+                    }
+                    
+                    // Acknowledge the record
                     record.receiverOffset().acknowledge();
                 })
-                .doOnError(error -> log.error("Error consuming Kafka message", error))
+                .doOnError(error -> log.error("Error consuming from Kafka: {}", error.getMessage()))
+                .retry(3) // Retry 3 times in case of errors
                 .subscribe();
     }
 }
