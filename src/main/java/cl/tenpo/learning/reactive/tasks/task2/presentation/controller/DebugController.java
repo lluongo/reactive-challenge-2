@@ -4,7 +4,9 @@ import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.RedisConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
@@ -42,14 +44,20 @@ public class DebugController {
         return Mono.just("pong");
     }
     
-    @GetMapping("/clear-cache")
+    @DeleteMapping("/clear-cache")
     public Mono<Map<String, String>> clearRedisCache() {
         return reactiveRedisTemplate.opsForValue().delete(RedisConfig.PERCENTAGE_KEY)
                 .map(result -> {
                     Map<String, String> response = new HashMap<>();
                     response.put("status", "success");
-                    response.put("message", "Cache cleared: " + (result ? "Key deleted" : "Key not found"));
+                    response.put("message", "Redis cache cleared");
+                    response.put("keysDeleted", result.toString());
                     return response;
                 });
+    }
+    
+    @PostMapping("/clear-cache")
+    public Mono<Map<String, String>> clearRedisCachePost() {
+        return clearRedisCache();
     }
 }

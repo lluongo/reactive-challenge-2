@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="cl.tenpo.learning.reactive.tasks.task2.application.PercentageServiceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-07-03T14:51:08" hostname="LUCLUO0225M" time="0.085">
+  <properties/>
+  <testcase name="testGetPercentageFromExternalApi()" classname="cl.tenpo.learning.reactive.tasks.task2.application.PercentageServiceTest" time="0.079"/>
+  <testcase name="testServiceHandlesApiCall()" classname="cl.tenpo.learning.reactive.tasks.task2.application.PercentageServiceTest" time="0.002"/>
+  <testcase name="testServiceCanReturnValue()" classname="cl.tenpo.learning.reactive.tasks.task2.application.PercentageServiceTest" time="0.002"/>
+  <system-out><![CDATA[[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onNext(0.25) 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onComplete() 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onNext(0.3) 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onComplete() 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onNext(0.15) 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onComplete() 
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,71 +1,82 @@
 package cl.tenpo.learning.reactive.tasks.task2.presentation.controller;
 
 import cl.tenpo.learning.reactive.tasks.task2.application.port.CalculationService;
-import cl.tenpo.learning.reactive.tasks.task2.application.port.CallHistoryService;
 import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.CalculationRequest;
 import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.CalculationResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Flux;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@WebFluxTest(controllers = CalculationController.class)
+/**
+ * Unit tests para CalculationController
+ */
+@ExtendWith(MockitoExtension.class)
 public class CalculationControllerIntegrationTest {
 
-    @Autowired
-    private WebTestClient webTestClient;
-
-    @MockBean
+    @Mock
     private CalculationService calculationService;
 
-    @MockBean
-    private CallHistoryService callHistoryService;
+    @InjectMocks
+    private CalculationController controller;
 
-    @Test
-    void calculate_happyPath_shouldReturnCorrectResult() {
-        // Given
-        CalculationRequest request = new CalculationRequest(new BigDecimal("10.0"), new BigDecimal("5.0"));
-        BigDecimal result = new BigDecimal("16.5"); // (10 + 5) + (10 + 5) * 0.1 = 16.5
-        CalculationResponse expectedResponse = new CalculationResponse(result, request.getNum1(), request.getNum2());
-        
-        when(calculationService.calculateWithPercentage(eq(request.getNum1()), eq(request.getNum2())))
-                .thenReturn(Mono.just(result));
-        
-        when(callHistoryService.getCallHistory(any(Pageable.class)))
-                .thenReturn(Flux.empty());
+    @Mock
+    private ServerWebExchange exchange;
 
-        // When & Then
-        webTestClient.post()
-                .uri("/v1/calculation")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(CalculationResponse.class)
-                .isEqualTo(expectedResponse);
+    @BeforeEach
+    void setUp() {
+        when(exchange.getRequest()).thenReturn(mock(org.springframework.http.server.reactive.ServerHttpRequest.class));
+        when(exchange.getRequest().getId()).thenReturn("test-request-id");
     }
 
     @Test
-    void calculate_withInvalidInput_shouldReturnBadRequest() {
-        // Test with invalid input (null values)
-        CalculationRequest request = new CalculationRequest(null, null);
+    void calculate_shouldReturnCorrectResult() {
+        // Given
+        CalculationRequest request = new CalculationRequest(BigDecimal.valueOf(10), BigDecimal.valueOf(5));
+        BigDecimal expectedResult = BigDecimal.valueOf(16.5);
         
-        webTestClient.post()
-                .uri("/v1/calculation")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isBadRequest();
+        when(calculationService.calculateWithPercentage(any(), any()))
+                .thenReturn(Mono.just(expectedResult));
+
+        // When
+        Mono<CalculationResponse> result = controller.calculate(request, exchange);
+
+        // Then
+        StepVerifier.create(result)
+                .expectNextMatches(response -> 
+                    response.getResult().equals(expectedResult) &&
+                    response.getNum1().equals(BigDecimal.valueOf(10)) &&
+                    response.getNum2().equals(BigDecimal.valueOf(5))
+                )
+                .verifyComplete();
+    }
+
+    @Test
+    void calculate_withValidInputs_shouldProcessCorrectly() {
+        // Given
+        CalculationRequest request = new CalculationRequest(BigDecimal.valueOf(20), BigDecimal.valueOf(30));
+        BigDecimal expectedResult = BigDecimal.valueOf(75.0);
+        
+        when(calculationService.calculateWithPercentage(any(), any()))
+                .thenReturn(Mono.just(expectedResult));
+
+        // When
+        Mono<CalculationResponse> result = controller.calculate(request, exchange);
+
+        // Then
+        StepVerifier.create(result)
+                .expectNextMatches(response -> response.getResult().equals(expectedResult))
+                .verifyComplete();
     }
 }

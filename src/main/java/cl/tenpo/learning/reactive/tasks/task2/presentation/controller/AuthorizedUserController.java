@@ -14,31 +14,31 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/users")
+@RequestMapping("")
 public class AuthorizedUserController {
 
     private final AuthorizedUserService userService;
 
-    @GetMapping("")
+    @GetMapping("${app.api.endpoints.users}")
     public Flux<AuthorizedUser> getAllUsers() {
         log.info("Request to get all authorized users");
         return userService.findAllUsers();
     }
 
-    @PostMapping("")
+    @PostMapping("${app.api.endpoints.users}")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<AuthorizedUser> createUser(@Valid @RequestBody AuthorizedUserRequest request) {
         log.info("Request to create authorized user: {}", request);
         return userService.createUser(request);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("${app.api.endpoints.users}/{id}")
     public Mono<AuthorizedUser> deactivateUser(@PathVariable Long id) {
         log.info("Request to deactivate user with id: {}", id);
         return userService.deactivateUser(id);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("${app.api.endpoints.users}/{id}")
     public Mono<AuthorizedUser> getUserById(@PathVariable Long id) {
         log.info("Request to get user with id: {}", id);
         return userService.findUserById(id);

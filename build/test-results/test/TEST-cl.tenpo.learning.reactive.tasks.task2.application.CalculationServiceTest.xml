@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-07-03T00:14:54" hostname="LUCLUO0225M" time="0.636">
+<testsuite name="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-07-03T14:51:07" hostname="LUCLUO0225M" time="0.602">
   <properties/>
-  <testcase name="calculateWithPercentage_withValidPercentage_shouldApplyPercentageCorrectly()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.627"/>
-  <testcase name="calculateWithPercentage_withErrorFromPercentageService_shouldPropagateError()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.005"/>
+  <testcase name="calculateWithPercentage_withValidPercentage_shouldApplyPercentageCorrectly()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.596"/>
+  <testcase name="calculateWithPercentage_withErrorFromPercentageService_shouldPropagateError()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.003"/>
   <testcase name="calculateWithPercentage_withZeroPercentage_shouldReturnSumOnly()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.001"/>
-  <system-out><![CDATA[[Test worker] 2025-07-02 21:14:55 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculating with numbers: 10.0 and 5.0 
-[Test worker] 2025-07-02 21:14:55 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculation result: 10.0 + 5.0 = 15.0, applying percentage 0.1: final result = 16.50 
-[Test worker] 2025-07-02 21:14:55 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculation completed successfully with result: 16.50 
-[Test worker] 2025-07-02 21:14:55 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculating with numbers: 10.0 and 5.0 
-[Test worker] 2025-07-02 21:14:55 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Error during calculation: Test exception 
-[Test worker] 2025-07-02 21:14:55 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculating with numbers: 10.0 and 5.0 
-[Test worker] 2025-07-02 21:14:55 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculation result: 10.0 + 5.0 = 15.0, applying percentage 0.0: final result = 15.00 
-[Test worker] 2025-07-02 21:14:55 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculation completed successfully with result: 15.00 
+  <system-out><![CDATA[[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculating with numbers: 10.0 and 5.0 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculation result: 10.0 + 5.0 = 15.0, applying percentage 0.1: final result = 16.50 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculation completed successfully with result: 16.50 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculating with numbers: 10.0 and 5.0 
+[Test worker] 2025-07-03 11:51:08 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Error during calculation: Test exception 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculating with numbers: 10.0 and 5.0 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculation result: 10.0 + 5.0 = 15.0, applying percentage 0.0: final result = 15.00 
+[Test worker] 2025-07-03 11:51:08 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - Calculation completed successfully with result: 15.00 
 ]]></system-out>
   <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (/Users/lucas.luongo/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.14.19/154da3a65b4f4a909d3e5bdec55d1b2b4cbb6ce1/byte-buddy-agent-1.14.19.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning

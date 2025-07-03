@@ -65,11 +65,10 @@ public class RequestLoggingFilter implements WebFilter {
 
     @SneakyThrows
     private Mono<Void> recordRequest(String endpoint, String method, String parameters, String response, int statusCode) {
-        // Record successful request if status code is 2xx
-        if (statusCode >= 200 && statusCode < 300) {
-            return callHistoryService.recordSuccessfulRequest(endpoint, method, parameters, response).then();
-        } else {
-            return callHistoryService.recordFailedRequest(endpoint, method, parameters, response).then();
-        }
+        return Mono.just(statusCode)
+                .filter(status -> status >= 200 && status < 300)
+                .flatMap(status -> callHistoryService.recordSuccessfulRequest(endpoint, method, parameters, response))
+                .switchIfEmpty(callHistoryService.recordFailedRequest(endpoint, method, parameters, response))
+                .then();
     }
 }

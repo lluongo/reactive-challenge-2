@@ -65,25 +65,55 @@ public class PercentageCacheService {
      * @return Mono con el porcentaje convertido a BigDecimal, o Mono.empty() si no se puede convertir
      */
     private Mono<BigDecimal> convertCachedValueToBigDecimal(Object value) {
-        if (value instanceof BigDecimal) {
-            log.info("Retrieved percentage from cache: {}", value);
-            return Mono.just((BigDecimal) value);
-        } else if (value instanceof Double) {
-            log.info("Retrieved percentage from cache (as Double): {}", value);
-            return Mono.just(BigDecimal.valueOf((Double) value));
-        } else if (value instanceof Number) {
-            log.info("Retrieved percentage from cache (as Number): {}", value);
-            return Mono.just(BigDecimal.valueOf(((Number) value).doubleValue()));
-        } else if (value instanceof String) {
-            try {
-                log.info("Retrieved percentage from cache (as String): {}", value);
-                return Mono.just(new BigDecimal((String) value));
-            } catch (NumberFormatException e) {
-                log.warn("Invalid cached percentage format: {}", value);
-                return Mono.empty();
-            }
-        }
-        log.warn("Unexpected type in cache: {}", value.getClass().getName());
-        return Mono.empty();
+        return Mono.justOrEmpty(value)
+                .cast(Object.class)
+                .flatMap(this::convertByType)
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.warn("Unexpected type in cache or null value: {}", 
+                        value != null ? value.getClass().getName() : "null");
+                    return Mono.empty();
+                }));
+    }
+
+    /**
+     * Convierte el valor según su tipo usando operadores reactivos.
+     */
+    private Mono<BigDecimal> convertByType(Object value) {
+        return Mono.just(value)
+                .filter(BigDecimal.class::isInstance)
+                .cast(BigDecimal.class)
+                .doOnNext(v -> log.info("Retrieved percentage from cache: {}", v))
+                .switchIfEmpty(
+                    Mono.just(value)
+                        .filter(Double.class::isInstance)
+                        .cast(Double.class)
+                        .map(BigDecimal::valueOf)
+                        .doOnNext(v -> log.info("Retrieved percentage from cache (as Double): {}", v))
+                )
+                .switchIfEmpty(
+                    Mono.just(value)
+                        .filter(Number.class::isInstance)
+                        .cast(Number.class)
+                        .map(n -> BigDecimal.valueOf(n.doubleValue()))
+                        .doOnNext(v -> log.info("Retrieved percentage from cache (as Number): {}", v))
+                )
+                .switchIfEmpty(
+                    Mono.just(value)
+                        .filter(String.class::isInstance)
+                        .cast(String.class)
+                        .flatMap(this::convertStringToBigDecimal)
+                );
+    }
+
+    /**
+     * Convierte String a BigDecimal manejando errores reactivamente.
+     */
+    private Mono<BigDecimal> convertStringToBigDecimal(String stringValue) {
+        return Mono.fromCallable(() -> new BigDecimal(stringValue))
+                .doOnNext(v -> log.info("Retrieved percentage from cache (as String): {}", v))
+                .onErrorResume(NumberFormatException.class, error -> {
+                    log.warn("Invalid cached percentage format: {}", stringValue);
+                    return Mono.empty();
+                });
     }
 }

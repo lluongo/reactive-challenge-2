@@ -55,18 +55,23 @@ public class AuthorizedUserService {
 
     public Mono<AuthorizedUser> deactivateUser(Long id) {
         return userRepository.findById(id)
-                .flatMap(user -> {
-                    if (!user.getActive()) {
-                        return Mono.error(new IllegalStateException("User is already inactive"));
-                    }
-                    
-                    user.setActive(false);
-                    user.setUpdatedAt(LocalDateTime.now());
-                    
-                    log.info("Deactivating user: {}", user);
-                    return userRepository.save(user);
-                })
+                .filter(AuthorizedUser::getActive)
+                .switchIfEmpty(Mono.error(new IllegalStateException("User is already inactive or not found")))
+                .flatMap(this::deactivateUserInternal)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("User not found with ID: " + id)));
+    }
+
+    /**
+     * Desactiva un usuario internamente usando operadores reactivos.
+     */
+    private Mono<AuthorizedUser> deactivateUserInternal(AuthorizedUser user) {
+        return Mono.just(user)
+                .doOnNext(u -> {
+                    u.setActive(false);
+                    u.setUpdatedAt(LocalDateTime.now());
+                    log.info("Deactivating user: {}", u);
+                })
+                .flatMap(userRepository::save);
     }
 
     public Mono<Boolean> isUserAuthorized(String username) {

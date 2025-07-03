@@ -1,15 +1,15 @@
 server:
-  port: ${APPLICATION_PORT}
+  port: ${SERVER_PORT:8083}
 
 spring:
+  application:
+    name: reactive-learning
   main:
     allow-bean-definition-overriding: true
+  profiles:
+    active: local
   webflux:
     base-path: /learning-reactive
-  r2dbc:
-    url: r2dbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB_NAME}?connectTimeout=30&socketTimeout=30
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASS}
   data:
     mongodb:
       uri: mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}/${MONGO_DB_NAME}?authSource=admin
@@ -19,10 +19,12 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-  jackson:
-    property-naming-strategy: SNAKE_CASE
+  r2dbc:
+    url: r2dbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB_NAME}?connectTimeout=30&socketTimeout=30
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASS}
   kafka:
-    bootstrap-servers: ${KAFKA_HOST}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     properties:
       security:
         protocol: ${KAFKA_SECURITY_PROTOCOL}
@@ -31,48 +33,143 @@ spring:
         jaas:
           config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_API_CLIENT}" password="${KAFKA_API_SECRET}";
     consumer:
+      group-id: reactive-learning-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       auto-offset-reset: earliest
-      enable-auto-commit: true
-      group-id: tenpo_learning_reactive
     producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring:
           json:
             add:
               type:
                 headers: false
+  jackson:
+    property-naming-strategy: SNAKE_CASE
 
 app:
-  timeouts:
-    external-api-timeout: PT20S
-    cache-timeout: PT5S
-    database-timeout: PT10S
-  
   api:
     endpoints:
-      calculation: "/v1/calculation"
-      users: "/v1/users"
-      history: "/v1/history"
-      debug: "/debug"
-      debug-routes: "/routes"
-      debug-ping: "/ping"
-      debug-clear-cache: "/clear-cache"
-    
+      calculation: /calculation
+      history: /history
+      users: /users
+      debug: /debug
+      debug-routes: /routes
+      debug-ping: /ping
+      debug-clear-cache: /clear-cache
     external:
-      base-url: "/external-api"
-      percentage-path: "/percentage"
+      base-url: http://localhost:8083/learning-reactive
+      percentage-path: /external-api/percentage
   
+  # Configuración de timeouts externalizados
+  timeouts:
+    external-api: PT20S
+    cache-operation: PT5S
+    database-operation: PT10S
+    circuit-breaker: PT30S
+    web-client: PT65S
+    
+  # Configuración de Circuit Breaker
+  circuit-breaker:
+    failure-threshold: 5
+    open-state-duration: PT30S
+    half-open-max-calls: 3
+    
+  # Configuración de Retry mejorada
   retry:
     max-attempts: 3
     initial-backoff: PT1S
-  
+    max-backoff: PT10S
+    backoff-multiplier: 2.0
+    
+  # Configuración de Schedulers
+  schedulers:
+    database:
+      core-pool-size: 10
+      max-pool-size: 100
+      ttl-seconds: 60
+    external-api:
+      core-pool-size: 5
+      max-pool-size: 50
+      ttl-seconds: 30
+    cache:
+      parallelism: 4
+    logging:
+      core-pool-size: 3
+      max-pool-size: 20
+      ttl-seconds: 45
+
   kafka:
     topics:
-      retry-exhausted: "CR_RETRY_EXHAUSTED"
-  
+      retry-exhausted: CR_RETRY_EXHAUSTED
+
   filters:
     logging:
       excluded-paths:
         - "/actuator"
         - "/swagger"
         - "/v3/api-docs"
+
+logging:
+  level:
+    cl.tenpo.learning.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.netty: INFO
+    org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: learning_reactive_mongo
+      username: mongodb
+      password: mongodb
+      authentication-database: admin
+    redis:
+      host: localhost
+      port: 6379
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/learning_reactive_r2dbc?currentSchema=public
+    username: postgresql
+    password: postgresql
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 10
+      max-idle-time: 30m
+  kafka:
+    bootstrap-servers: localhost:9092
+    properties:
+      security:
+        protocol: PLAINTEXT
+
+app:
+  circuit-breaker:
+    failure-threshold: 3  # Más permisivo en local
+    open-state-duration: PT15S
+  retry:
+    max-attempts: 2  # Menos reintentos en local
+    initial-backoff: PT0.5S  # Corregido formato ISO-8601

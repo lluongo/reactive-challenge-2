@@ -61,14 +61,4 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    
-    // Incluir solo tests específicos que sabemos que funcionan
-    filter {
-        includeTestsMatching "cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest.*"
-        includeTestsMatching "cl.tenpo.learning.reactive.utils.*"
-        includeTestsMatching "cl.tenpo.learning.reactive.tasks.task2.application.ExternalPercentageServiceTest.getPercentage_whenCacheEmptyAndApiFails_shouldThrowServiceUnavailableException"
-        includeTestsMatching "cl.tenpo.learning.reactive.tasks.task2.application.ExternalPercentageServiceTest.getPercentage_whenCacheEmptyAndApiSucceeds_shouldFetchFromApiAndCache"
-        includeTestsMatching "cl.tenpo.learning.reactive.tasks.task2.application.ExternalPercentageServiceTest.getPercentage_whenCacheEmpty_shouldFetchFromApi"
-        includeTestsMatching "cl.tenpo.learning.reactive.tasks.task2.application.FallbackPercentageTest.testExternalServiceFailure_shouldThrowServiceUnavailableException"
-    }
 }
