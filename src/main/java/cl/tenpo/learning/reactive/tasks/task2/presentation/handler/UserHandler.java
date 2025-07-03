@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * Handler funcional para operaciones de usuarios autorizados.
+ * Delega toda la lógica de negocio al servicio correspondiente.
  */
 @Slf4j
 @Component
@@ -23,11 +24,13 @@ public class UserHandler {
      * Obtiene todos los usuarios autorizados.
      */
     public Mono<ServerResponse> getAllUsers(ServerRequest request) {
-        return userService.findAllUsers()
-                .collectList()
+        return userService.findAllUsersAsList()
                 .flatMap(users -> ServerResponse.ok().bodyValue(users))
                 .doOnError(error -> log.error("Error getting all users: {}", error.getMessage()))
-                .onErrorResume(this::handleServiceError);
+                .onErrorResume(error -> 
+                    ServerResponse.status(500)
+                        .bodyValue("Error retrieving users: " + error.getMessage())
+                );
     }
 
     /**
@@ -38,50 +41,37 @@ public class UserHandler {
                 .flatMap(userService::createUser)
                 .flatMap(user -> ServerResponse.status(201).bodyValue(user))
                 .doOnError(error -> log.error("Error creating user: {}", error.getMessage()))
-                .onErrorResume(this::handleUserCreationError);
+                .onErrorResume(error -> 
+                    ServerResponse.badRequest()
+                        .bodyValue("Error creating user: " + error.getMessage())
+                );
     }
 
     /**
      * Obtiene un usuario por ID.
      */
     public Mono<ServerResponse> getUserById(ServerRequest request) {
-        return Mono.fromCallable(() -> Long.parseLong(request.pathVariable("id")))
-                .flatMap(userService::findUserById)
+        return userService.findUserByIdFromString(request.pathVariable("id"))
                 .flatMap(user -> ServerResponse.ok().bodyValue(user))
                 .switchIfEmpty(ServerResponse.notFound().build())
                 .doOnError(error -> log.error("Error getting user by id: {}", error.getMessage()))
-                .onErrorResume(this::handleServiceError);
+                .onErrorResume(error -> 
+                    ServerResponse.badRequest()
+                        .bodyValue("Error retrieving user: " + error.getMessage())
+                );
     }
 
     /**
      * Desactiva un usuario.
      */
     public Mono<ServerResponse> deactivateUser(ServerRequest request) {
-        return Mono.fromCallable(() -> Long.parseLong(request.pathVariable("id")))
-                .flatMap(userService::deactivateUser)
+        return userService.deactivateUserFromString(request.pathVariable("id"))
                 .flatMap(user -> ServerResponse.ok().bodyValue(user))
                 .switchIfEmpty(ServerResponse.notFound().build())
                 .doOnError(error -> log.error("Error deactivating user: {}", error.getMessage()))
-                .onErrorResume(this::handleServiceError);
-    }
-
-    /**
-     * Maneja errores de servicio usando operadores reactivos.
-     */
-    private Mono<ServerResponse> handleServiceError(Throwable error) {
-        return ServerResponse.status(500)
-                .bodyValue("Error with user service: " + error.getMessage());
-    }
-
-    /**
-     * Maneja errores específicos de creación de usuarios.
-     */
-    private Mono<ServerResponse> handleUserCreationError(Throwable error) {
-        return Mono.just(error.getMessage())
-                .filter(msg -> msg.contains("already exists"))
-                .flatMap(msg -> ServerResponse.badRequest()
-                        .bodyValue("User already exists: " + msg))
-                .switchIfEmpty(ServerResponse.status(500)
-                        .bodyValue("Error creating user: " + error.getMessage()));
+                .onErrorResume(error -> 
+                    ServerResponse.badRequest()
+                        .bodyValue("Error deactivating user: " + error.getMessage())
+                );
     }
 }

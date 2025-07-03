@@ -44,10 +44,14 @@ public class CalculationControllerIntegrationTest {
     void calculate_shouldReturnCorrectResult() {
         // Given
         CalculationRequest request = new CalculationRequest(BigDecimal.valueOf(10), BigDecimal.valueOf(5));
-        BigDecimal expectedResult = BigDecimal.valueOf(16.5);
+        CalculationResponse expectedResponse = new CalculationResponse(
+            BigDecimal.valueOf(16.5), 
+            BigDecimal.valueOf(10), 
+            BigDecimal.valueOf(5)
+        );
         
-        when(calculationService.calculateWithPercentage(any(), any()))
-                .thenReturn(Mono.just(expectedResult));
+        when(calculationService.processCalculationRequest(any()))
+                .thenReturn(Mono.just(expectedResponse));
 
         // When
         Mono<CalculationResponse> result = controller.calculate(request, exchange);
@@ -55,7 +59,7 @@ public class CalculationControllerIntegrationTest {
         // Then
         StepVerifier.create(result)
                 .expectNextMatches(response -> 
-                    response.getResult().equals(expectedResult) &&
+                    response.getResult().equals(BigDecimal.valueOf(16.5)) &&
                     response.getNum1().equals(BigDecimal.valueOf(10)) &&
                     response.getNum2().equals(BigDecimal.valueOf(5))
                 )
@@ -66,17 +70,21 @@ public class CalculationControllerIntegrationTest {
     void calculate_withValidInputs_shouldProcessCorrectly() {
         // Given
         CalculationRequest request = new CalculationRequest(BigDecimal.valueOf(20), BigDecimal.valueOf(30));
-        BigDecimal expectedResult = BigDecimal.valueOf(75.0);
+        CalculationResponse expectedResponse = new CalculationResponse(
+            BigDecimal.valueOf(75.0), 
+            BigDecimal.valueOf(20), 
+            BigDecimal.valueOf(30)
+        );
         
-        when(calculationService.calculateWithPercentage(any(), any()))
-                .thenReturn(Mono.just(expectedResult));
+        when(calculationService.processCalculationRequest(any()))
+                .thenReturn(Mono.just(expectedResponse));
 
         // When
         Mono<CalculationResponse> result = controller.calculate(request, exchange);
 
         // Then
         StepVerifier.create(result)
-                .expectNextMatches(response -> response.getResult().equals(expectedResult))
+                .expectNextMatches(response -> response.getResult().equals(BigDecimal.valueOf(75.0)))
                 .verifyComplete();
     }
 }

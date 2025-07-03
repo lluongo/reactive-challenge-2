@@ -3,20 +3,20 @@ package cl.tenpo.learning.reactive.tasks.task2.presentation.controller;
 import cl.tenpo.learning.reactive.tasks.task2.application.port.CalculationService;
 import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.CalculationRequest;
 import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.CalculationResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import reactor.util.context.Context;
+
+import jakarta.validation.Valid;
 
 /**
- * Controlador para manejar operaciones de cálculo.
+ * Controller REST para operaciones de cálculo.
+ * Delega toda la lógica de negocio al servicio correspondiente.
  */
 @Slf4j
 @RestController
@@ -25,9 +25,6 @@ import reactor.util.context.Context;
 public class CalculationController {
 
     private final CalculationService calculationService;
-    
-    @Value("${app.api.endpoints.calculation}")
-    private String calculationEndpoint;
 
     /**
      * Realiza un cálculo sumando dos números y aplicando un porcentaje
@@ -45,16 +42,8 @@ public class CalculationController {
         final String requestId = exchange.getRequest().getId();
         log.info("Received calculation request [{}]: {}", requestId, calculationRequest);
         
-        return Mono.deferContextual(ctx -> 
-            calculationService.calculateWithPercentage(
-                    calculationRequest.getNum1(), 
-                    calculationRequest.getNum2()
-            )
-            .map(result -> new CalculationResponse(result, calculationRequest.getNum1(), calculationRequest.getNum2()))
-            .doOnNext(response -> log.info("Calculation completed [{}] with result: {}", ctx.get("requestId"), response))
-            .doOnError(e -> log.error("Error processing calculation [{}]: {}", ctx.get("requestId"), e.getMessage()))
-        )
-        .contextWrite(Context.of("requestId", requestId))
-        .checkpoint("calculation-controller-response");
+        return calculationService.processCalculationRequest(calculationRequest)
+                .doOnSuccess(response -> log.info("Calculation request [{}] completed: {}", requestId, response))
+                .doOnError(error -> log.error("Calculation request [{}] failed: {}", requestId, error.getMessage()));
     }
 }

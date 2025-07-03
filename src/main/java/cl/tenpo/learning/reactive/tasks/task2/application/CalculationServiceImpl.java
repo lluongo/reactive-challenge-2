@@ -2,9 +2,9 @@ package cl.tenpo.learning.reactive.tasks.task2.application;
 
 import cl.tenpo.learning.reactive.tasks.task2.application.port.CalculationService;
 import cl.tenpo.learning.reactive.tasks.task2.application.port.PercentageService;
-import cl.tenpo.learning.reactive.tasks.task2.domain.model.Calculation;
+import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.CalculationRequest;
+import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.CalculationResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -33,25 +33,50 @@ public class CalculationServiceImpl implements CalculationService {
             return Mono.error(new IllegalArgumentException("Input numbers cannot be null"));
         }
         
-        return percentageService.getPercentage()
-                .map(percentage -> performCalculation(num1, num2, percentage))
-                .doOnNext(result -> log.info("Calculation completed successfully with result: {}", result))
-                .doOnError(error -> log.error("Error during calculation: {}", error.getMessage()))
-                .checkpoint("calculation-service-result");
-    }
-    
-    /**
-     * Realiza el cálculo aplicando el porcentaje al resultado de la suma.
-     */
-    private BigDecimal performCalculation(BigDecimal num1, BigDecimal num2, BigDecimal percentage) {
-        Calculation calculation = Calculation.of(num1, num2, percentage);
         BigDecimal sum = num1.add(num2);
-        BigDecimal percentageAmount = sum.multiply(percentage);
-        BigDecimal result = sum.add(percentageAmount).setScale(2, RoundingMode.HALF_UP);
         
-        log.info("Calculation result: {} + {} = {}, applying percentage {}: final result = {}", 
-                num1, num2, sum, percentage, result);
-                
-        return result;
+        return percentageService.getPercentage()
+                .map(percentage -> {
+                    BigDecimal percentageAmount = sum.multiply(percentage);
+                    BigDecimal result = sum.add(percentageAmount);
+                    BigDecimal roundedResult = result.setScale(2, RoundingMode.HALF_UP);
+                    
+                    log.info("Calculation result: {} + {} = {}, applying percentage {}: final result = {}", 
+                            num1, num2, sum, percentage, roundedResult);
+                    
+                    return roundedResult;
+                })
+                .doOnSuccess(result -> log.info("Calculation completed successfully with result: {}", result))
+                .doOnError(error -> log.error("Error during calculation: {}", error.getMessage()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Mono<CalculationResponse> processCalculationRequest(CalculationRequest request) {
+        log.info("Processing calculation request: {}", request);
+        
+        return validateCalculationRequest(request)
+                .flatMap(validRequest -> 
+                    calculateWithPercentage(validRequest.getNum1(), validRequest.getNum2())
+                        .map(result -> new CalculationResponse(result, validRequest.getNum1(), validRequest.getNum2()))
+                )
+                .doOnSuccess(response -> log.info("Calculation request processed successfully: {}", response))
+                .doOnError(error -> log.error("Error processing calculation request: {}", error.getMessage()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Mono<CalculationRequest> validateCalculationRequest(CalculationRequest request) {
+        return Mono.just(request)
+                .filter(req -> req.getNum1() != null && req.getNum2() != null)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Both numbers must be provided")))
+                .filter(req -> req.getNum1().compareTo(BigDecimal.ZERO) >= 0 && req.getNum2().compareTo(BigDecimal.ZERO) >= 0)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Numbers must be non-negative")))
+                .doOnNext(validRequest -> log.debug("Request validated successfully: {}", validRequest))
+                .doOnError(error -> log.warn("Request validation failed: {}", error.getMessage()));
     }
 }

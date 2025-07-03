@@ -6,6 +6,7 @@ import cl.tenpo.learning.reactive.tasks.task2.infrastructure.persistence.CallHis
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -14,6 +15,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Implementación del servicio para registrar y recuperar el historial de llamadas a la API.
@@ -94,5 +96,30 @@ public class CallHistoryServiceImpl implements CallHistoryService {
                     return Mono.empty();
                 })
                 .checkpoint("record-failed-history");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Mono<List<CallHistory>> getCallHistoryAsList(Pageable pageable) {
+        return getCallHistory(pageable)
+                .collectList()
+                .doOnSuccess(history -> log.info("Retrieved {} call history records", history.size()))
+                .doOnError(error -> log.error("Error retrieving call history list: {}", error.getMessage()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Mono<List<CallHistory>> getCallHistoryFromParams(Integer page, Integer size) {
+        int pageNumber = page != null ? page : 0;
+        int pageSize = size != null ? size : 10;
+        
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        log.info("Creating pageable for call history: page={}, size={}", pageNumber, pageSize);
+        
+        return getCallHistoryAsList(pageable);
     }
 }
