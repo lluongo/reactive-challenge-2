@@ -21,38 +21,31 @@ public class CalculationServiceImpl implements CalculationService {
     
     private final PercentageService percentageService;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Mono<BigDecimal> calculateWithPercentage(BigDecimal num1, BigDecimal num2) {
         log.info("Calculating with numbers: {} and {}", num1, num2);
         
-        // Validar inputs para evitar valores nulos o negativos
-        if (num1 == null || num2 == null) {
-            return Mono.error(new IllegalArgumentException("Input numbers cannot be null"));
-        }
-        
-        BigDecimal sum = num1.add(num2);
-        
-        return percentageService.getPercentage()
-                .map(percentage -> {
-                    BigDecimal percentageAmount = sum.multiply(percentage);
-                    BigDecimal result = sum.add(percentageAmount);
-                    BigDecimal roundedResult = result.setScale(2, RoundingMode.HALF_UP);
-                    
-                    log.info("Calculation result: {} + {} = {}, applying percentage {}: final result = {}", 
-                            num1, num2, sum, percentage, roundedResult);
-                    
-                    return roundedResult;
-                })
+        return Mono.just(new BigDecimal[]{num1, num2})
+                .filter(numbers -> numbers[0] != null && numbers[1] != null)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Input numbers cannot be null")))
+                .map(numbers -> numbers[0].add(numbers[1]))
+                .flatMap(sum -> percentageService.getPercentage()
+                    .map(percentage -> calculateFinalResult(sum, percentage, num1, num2)))
                 .doOnSuccess(result -> log.info("Calculation completed successfully with result: {}", result))
                 .doOnError(error -> log.error("Error during calculation: {}", error.getMessage()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    private BigDecimal calculateFinalResult(BigDecimal sum, BigDecimal percentage, BigDecimal num1, BigDecimal num2) {
+        BigDecimal percentageAmount = sum.multiply(percentage);
+        BigDecimal result = sum.add(percentageAmount);
+        BigDecimal roundedResult = result.setScale(2, RoundingMode.HALF_UP);
+        
+        log.info("Calculation result: {} + {} = {}, applying percentage {}: final result = {}", 
+                num1, num2, sum, percentage, roundedResult);
+        
+        return roundedResult;
+    }
+
     @Override
     public Mono<CalculationResponse> processCalculationRequest(CalculationRequest request) {
         log.info("Processing calculation request: {}", request);
@@ -66,9 +59,6 @@ public class CalculationServiceImpl implements CalculationService {
                 .doOnError(error -> log.error("Error processing calculation request: {}", error.getMessage()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Mono<CalculationRequest> validateCalculationRequest(CalculationRequest request) {
         return Mono.just(request)

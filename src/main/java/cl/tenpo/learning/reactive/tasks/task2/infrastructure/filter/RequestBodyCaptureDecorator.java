@@ -4,7 +4,6 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import reactor.core.publisher.Flux;
-
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -21,9 +20,8 @@ public class RequestBodyCaptureDecorator extends ServerHttpRequestDecorator {
         return super.getBody().doOnNext(dataBuffer -> {
             byte[] content = new byte[dataBuffer.readableByteCount()];
             dataBuffer.read(content);
-            dataBuffer.readPosition(0); // Reset the read position
+            dataBuffer.readPosition(0);
             
-            // Store the body content
             String bodyContent = new String(content, StandardCharsets.UTF_8);
             bodyRef.set(bodyContent);
         });

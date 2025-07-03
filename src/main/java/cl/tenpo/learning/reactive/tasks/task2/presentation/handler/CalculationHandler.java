@@ -9,20 +9,12 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-/**
- * Handler funcional para operaciones de cálculo.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class CalculationHandler {
 
     private final CalculationService calculationService;
-
-    /**
-     * Maneja las peticiones de cálculo usando programación funcional.
-     * Toda la lógica de negocio se delega al servicio.
-     */
     public Mono<ServerResponse> calculate(ServerRequest request) {
         return request.bodyToMono(CalculationRequest.class)
                 .flatMap(calculationService::processCalculationRequest)

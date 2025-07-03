@@ -16,34 +16,32 @@ import java.time.Duration;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+
 public class RetryExhaustedConsumer {
 
     private final ReactiveKafkaConsumerTemplate<Object, Object> reactiveKafkaConsumerTemplate;
     private final KafkaConfig kafkaConfig;
-
+    
     @EventListener(ApplicationStartedEvent.class)
     public void consume() {
-        log.info("Starting Kafka consumer for {} topic", kafkaConfig.getRetryExhaustedTopic());
-
+        log.error("🔊🔊🔊 STARTING KAFKA CONSUMER FOR {} TOPIC 🔊🔊🔊", kafkaConfig.getRetryExhaustedTopic());
+        
         Flux<ReceiverRecord<Object, Object>> kafkaFlux = reactiveKafkaConsumerTemplate.receive();
-
+        
         kafkaFlux.doOnNext(record -> {
                     ConsumerRecord<Object, Object> kafkaRecord = record.receiverOffset().topicPartition().topic()
                             .equals(kafkaConfig.getRetryExhaustedTopic()) ? record : null;
                     
                     if (kafkaRecord != null) {
-                        log.info("Received message from topic {}: {}", 
+                        log.error("📨📨📨 RECEIVED MESSAGE FROM TOPIC {}: {} 📨📨📨", 
                                 kafkaConfig.getRetryExhaustedTopic(), 
                                 kafkaRecord.value());
-                        
-                        // Process message logic here
                     }
                     
-                    // Acknowledge the record
                     record.receiverOffset().acknowledge();
                 })
-                .doOnError(error -> log.error("Error consuming from Kafka: {}", error.getMessage()))
-                .retry(3) // Retry 3 times in case of errors
+                .doOnError(error -> log.error("💥💥💥 ERROR CONSUMING FROM KAFKA: {} 💥💥💥", error.getMessage()))
+                .retry(3)
                 .subscribe();
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.web.reactive.function.client.WebClient;
 import redis.embedded.RedisServer;
-
 import java.io.IOException;
 
 @Import(BaseJacksonConfig.class)
@@ -21,7 +20,6 @@ import java.io.IOException;
 public class E2ETestConfiguration {
 
     private final RedisServer redisServer;
-
     public E2ETestConfiguration(@Value("${spring.data.redis.port}") final int port) throws IOException {
         this.redisServer = new RedisServer(port);
     }
@@ -48,5 +46,4 @@ public class E2ETestConfiguration {
     public void preDestroy() throws IOException {
         redisServer.stop();
     }
-
 }

@@ -18,7 +18,6 @@ import reactor.core.publisher.Mono;
 public class AuthorizedUserController {
 
     private final AuthorizedUserService userService;
-
     @GetMapping("${app.api.endpoints.users}")
     public Flux<AuthorizedUser> getAllUsers() {
         log.info("Request to get all authorized users");

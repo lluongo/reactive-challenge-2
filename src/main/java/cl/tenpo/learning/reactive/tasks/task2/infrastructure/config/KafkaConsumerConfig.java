@@ -1,13 +1,10 @@
 package cl.tenpo.learning.reactive.tasks.task2.infrastructure.config;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate;
 import reactor.kafka.receiver.ReceiverOptions;
-
 import java.util.Collections;
 import java.util.Map;
 
@@ -15,18 +12,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KafkaConsumerConfig {
 
-    private final KafkaProperties kafkaProperties;
     private final KafkaConfig kafkaConfig;
 
     @Bean
     public ReceiverOptions<Object, Object> kafkaReceiverOptions() {
-        Map<String, Object> consumerProps = kafkaConfig.consumerProps();
-        
-        // Add default properties
-        consumerProps.putAll(kafkaProperties.buildConsumerProperties());
-        consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "retry-exhausted-consumer");
-        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-
+        Map<String, Object> consumerProps = kafkaConfig.createConsumerProperties();
         ReceiverOptions<Object, Object> basicReceiverOptions = ReceiverOptions.create(consumerProps);
         return basicReceiverOptions
                 .subscription(Collections.singleton(kafkaConfig.getRetryExhaustedTopic()));

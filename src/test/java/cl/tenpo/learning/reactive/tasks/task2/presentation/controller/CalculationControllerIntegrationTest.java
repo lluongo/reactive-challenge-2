@@ -12,25 +12,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import java.math.BigDecimal;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Unit tests para CalculationController
- */
 @ExtendWith(MockitoExtension.class)
 public class CalculationControllerIntegrationTest {
 
     @Mock
     private CalculationService calculationService;
-
     @InjectMocks
     private CalculationController controller;
-
     @Mock
     private ServerWebExchange exchange;
 
@@ -42,7 +35,6 @@ public class CalculationControllerIntegrationTest {
 
     @Test
     void calculate_shouldReturnCorrectResult() {
-        // Given
         CalculationRequest request = new CalculationRequest(BigDecimal.valueOf(10), BigDecimal.valueOf(5));
         CalculationResponse expectedResponse = new CalculationResponse(
             BigDecimal.valueOf(16.5), 
@@ -52,11 +44,7 @@ public class CalculationControllerIntegrationTest {
         
         when(calculationService.processCalculationRequest(any()))
                 .thenReturn(Mono.just(expectedResponse));
-
-        // When
         Mono<CalculationResponse> result = controller.calculate(request, exchange);
-
-        // Then
         StepVerifier.create(result)
                 .expectNextMatches(response -> 
                     response.getResult().equals(BigDecimal.valueOf(16.5)) &&
@@ -68,7 +56,6 @@ public class CalculationControllerIntegrationTest {
 
     @Test
     void calculate_withValidInputs_shouldProcessCorrectly() {
-        // Given
         CalculationRequest request = new CalculationRequest(BigDecimal.valueOf(20), BigDecimal.valueOf(30));
         CalculationResponse expectedResponse = new CalculationResponse(
             BigDecimal.valueOf(75.0), 
@@ -78,11 +65,7 @@ public class CalculationControllerIntegrationTest {
         
         when(calculationService.processCalculationRequest(any()))
                 .thenReturn(Mono.just(expectedResponse));
-
-        // When
         Mono<CalculationResponse> result = controller.calculate(request, exchange);
-
-        // Then
         StepVerifier.create(result)
                 .expectNextMatches(response -> response.getResult().equals(BigDecimal.valueOf(75.0)))
                 .verifyComplete();

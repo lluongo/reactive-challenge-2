@@ -13,36 +13,48 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Implementación de estrategia de reintentos con backoff.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
+
 public class BackoffRetryStrategy implements RetryStrategy {
 
     private final ApplicationEventPublisher eventPublisher;
-    
-    @Value("${app.retry.max-attempts:3}")
-    private int maxAttempts;
-    
-    @Value("${app.retry.initial-backoff:PT1S}")
+
+    @Value("${app.retry.max-attempts}")
+    private long maxAttempts;
+
+    @Value("${app.retry.initial-backoff}")
     private Duration initialBackoff;
+
+    @Value("${app.retry.max-backoff}")
+    private Duration maxBackoff;
+
+    @Value("${app.retry.backoff-multiplier}")
+    private double backoffMultiplier;
 
     @Override
     public <T> Retry getRetrySpec(Class<T> targetClass) {
+        log.error("🚀🚀🚀 CREATING RETRY SPEC FOR CLASS: {} WITH MAX ATTEMPTS: {} 🚀🚀🚀", targetClass.getSimpleName(), maxAttempts);
+
         return Retry.backoff(maxAttempts, initialBackoff)
-                .doAfterRetry(signal -> log.warn("Retry attempt {}: {}", 
-                        signal.totalRetries() + 1, signal.failure().getMessage()))
+                .doBeforeRetry(signal -> log.error("⏳⏳⏳ ABOUT TO RETRY #{}/{} FOR {}: {} ⏳⏳⏳", 
+                        signal.totalRetries() + 1, maxAttempts, targetClass.getSimpleName(), signal.failure().getMessage()))
+                .doAfterRetry(signal -> log.error("🔄🔄🔄 COMPLETED RETRY #{}/{} FOR {} 🔄🔄🔄",
+                        signal.totalRetries(), maxAttempts, targetClass.getSimpleName()))
                 .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> {
-                    String errorMsg = "Failed to fetch " + targetClass.getSimpleName() + " after " + maxAttempts + " attempts";
-                    log.error(errorMsg);
-                    
-                    Map<String, String> eventData = new HashMap<>();
-                    eventData.put("error", errorMsg + ": " + retrySignal.failure().getMessage());
-                    eventPublisher.publishEvent(new RetryExhaustedEvent(eventData));
-                    
-                    return new ServiceUnavailableException(errorMsg);
+                    log.error("💣💣💣 RETRY EXHAUSTED FOR {}: {} 💣💣💣", 
+                            targetClass.getSimpleName(), retrySignal.failure().getMessage());
+
+                    // Publicar evento para Kafka
+                    Map<String, String> errorData = new HashMap<>();
+                    errorData.put("error", retrySignal.failure().getMessage());
+                    errorData.put("targetClass", targetClass.getName());
+                    errorData.put("attempts", String.valueOf(maxAttempts));
+
+                    eventPublisher.publishEvent(new RetryExhaustedEvent(errorData));
+
+                    return new ServiceUnavailableException("Failed to fetch BigDecimal after " + maxAttempts + " attempts");
                 });
     }
 }

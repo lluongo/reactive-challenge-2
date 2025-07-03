@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface AuthorizedUserRepository extends R2dbcRepository<AuthorizedUser, Long> {
+
     Mono<AuthorizedUser> findByUsername(String username);
     Mono<AuthorizedUser> findByEmail(String email);
 }

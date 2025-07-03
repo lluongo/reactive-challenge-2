@@ -9,12 +9,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.util.Locale;
 import java.util.Map;
 
-/**
- * Cliente para comunicación con la API externa que provee el porcentaje.
- */
 @Component
 @RequiredArgsConstructor
 public class ExternalApiClient {
@@ -26,37 +22,32 @@ public class ExternalApiClient {
     @Value("${app.api.external.base-url}${app.api.external.percentage-path}")
     private String percentagePath;
 
-    /**
-     * Obtiene el porcentaje desde la API externa.
-     * 
-     * @return Mono con el porcentaje como BigDecimal
-     */
     public Mono<BigDecimal> fetchPercentage() {
         log.info("Fetching percentage from external API: {}", percentagePath);
+        
         return webClient.get()
                 .uri(percentagePath)
                 .retrieve()
                 .bodyToMono(Map.class)
-                .map(this::extractPercentageFromResponse);
+                .flatMap(this::extractPercentageFromResponseReactively)
+                .doOnSubscribe(s -> log.error("🌐🌐🌐 CALLING EXTERNAL API: {} 🌐🌐🌐", percentagePath))
+                .doOnError(err -> log.error("🌐🌐🌐 EXTERNAL API ERROR: {} 🌐🌐🌐", 
+                        err != null ? err.toString() : "Unknown error"));
     }
-    
-    /**
-     * Extrae el porcentaje de la respuesta del API.
-     * Maneja tanto formato con punto decimal como con coma decimal.
-     */
-    private BigDecimal extractPercentageFromResponse(Map<String, Object> response) {
+
+    private Mono<BigDecimal> extractPercentageFromResponseReactively(Map<String, Object> response) {
         String percentageStr = (String) response.get("percentage");
         log.info("Received percentage from external API: {}", percentageStr);
         
-        // Manejar tanto formato americano (punto) como europeo (coma)
-        try {
-            // Intentar parsear directamente (formato con punto)
-            return new BigDecimal(percentageStr);
-        } catch (NumberFormatException e) {
-            // Si falla, intentar reemplazar coma por punto
-            String normalizedStr = percentageStr.replace(',', '.');
-            log.info("Converting comma format to decimal point: {} -> {}", percentageStr, normalizedStr);
-            return new BigDecimal(normalizedStr);
-        }
+        return parsePercentageReactively(percentageStr);
+    }
+
+    private Mono<BigDecimal> parsePercentageReactively(String percentageStr) {
+        return Mono.fromCallable(() -> new BigDecimal(percentageStr))
+                .onErrorResume(NumberFormatException.class, error -> {
+                    String normalizedStr = percentageStr.replace(',', '.');
+                    log.info("Converting comma format to decimal point: {} -> {}", percentageStr, normalizedStr);
+                    return Mono.fromCallable(() -> new BigDecimal(normalizedStr));
+                });
     }
 }

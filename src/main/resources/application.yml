@@ -50,34 +50,33 @@ spring:
     property-naming-strategy: SNAKE_CASE
 
 app:
+  # Configuración de endpoints de API
   api:
     endpoints:
       calculation: /calculation
       history: /history
       users: /users
-      debug: /debug
-      debug-routes: /routes
-      debug-ping: /ping
-      debug-clear-cache: /clear-cache
+      ping: /ping
     external:
       base-url: http://localhost:8083/learning-reactive
       percentage-path: /external-api/percentage
+    base-paths:
+      functional: /learning-reactive/functional
+      alternative: /learning-reactive/v2
   
-  # Configuración de timeouts externalizados
+  # Configuración de timeouts
   timeouts:
     external-api: PT20S
     cache-operation: PT5S
     database-operation: PT10S
-    circuit-breaker: PT30S
-    web-client: PT65S
     
-  # Configuración de Circuit Breaker
-  circuit-breaker:
-    failure-threshold: 5
-    open-state-duration: PT30S
-    half-open-max-calls: 3
+  # Configuración de Paginación
+  pagination:
+    default-page: 0
+    default-page-size: 10
+    max-page-size: 100
     
-  # Configuración de Retry mejorada
+  # Configuración de Retry
   retry:
     max-attempts: 3
     initial-backoff: PT1S
@@ -97,14 +96,16 @@ app:
     cache:
       parallelism: 4
     logging:
-      core-pool-size: 3
-      max-pool-size: 20
-      ttl-seconds: 45
+      core-pool-size: 2
+      max-pool-size: 10
+      ttl-seconds: 30
 
+  # Configuración de Kafka
   kafka:
     topics:
       retry-exhausted: CR_RETRY_EXHAUSTED
 
+  # Configuración de filtros
   filters:
     logging:
       excluded-paths:
@@ -112,16 +113,21 @@ app:
         - "/swagger"
         - "/v3/api-docs"
 
+# Configuración de logging
 logging:
   level:
     cl.tenpo.learning.reactive: DEBUG
     org.springframework.web.reactive: DEBUG
     reactor.netty: INFO
     org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG
+    cl.tenpo.learning.reactive.tasks.task2.infrastructure.retry: TRACE
+    cl.tenpo.learning.reactive.tasks.task2.infrastructure.event: TRACE
+    cl.tenpo.learning.reactive.tasks.task2.application: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
 
+# Configuración de actuator
 management:
   endpoints:
     web:
@@ -136,6 +142,7 @@ management:
         enabled: true
 
 ---
+# Configuración específica para perfil local
 spring:
   config:
     activate:
@@ -167,9 +174,10 @@ spring:
         protocol: PLAINTEXT
 
 app:
-  circuit-breaker:
-    failure-threshold: 3  # Más permisivo en local
-    open-state-duration: PT15S
   retry:
-    max-attempts: 2  # Menos reintentos en local
-    initial-backoff: PT0.5S  # Corregido formato ISO-8601
+    max-attempts: 2
+    initial-backoff: PT0.5S
+  pagination:
+    default-page: 0
+    default-page-size: 10
+    max-page-size: 100

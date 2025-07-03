@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.114s</div>
+<div class="counter">0.065s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">testGetPercentageFromExternalApi()</td>
-<td class="success">0.108s</td>
+<td class="success">0.060s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
@@ -89,7 +89,7 @@
 </tr>
 <tr>
 <td class="success">testServiceHandlesApiCall()</td>
-<td class="success">0.004s</td>
+<td class="success">0.003s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -97,18 +97,24 @@
 <div id="tab1" class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onNext(0.25) 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onComplete() 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onNext(0.3) 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onComplete() 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onSubscribe(SerializedSubscriber) 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - request(unbounded) 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onNext(0.15) 
-[Test worker] 2025-07-03 12:20:28 ?[34mINFO ?[0;39m ?[36mexternal-percentage-service?[0;39m - onComplete() 
+<pre>[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f3af;&#x1f3af;&#x1f3af; GETPERCENTAGE() CALLED - CHECKING CACHE FIRST &#x1f3af;&#x1f3af;&#x1f3af; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f514;&#x1f514;&#x1f514; PERCENTAGE SERVICE SUBSCRIBED &#x1f514;&#x1f514;&#x1f514; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - ❌❌❌ CACHE MISS - CALLING fetchAndCachePercentage() ❌❌❌ 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f504;&#x1f504;&#x1f504; FETCH AND CACHE PERCENTAGE - CALLING EXTERNAL API WITH RETRY &#x1f504;&#x1f504;&#x1f504; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f4be;&#x1f4be;&#x1f4be; CACHED PERCENTAGE: 0.25 &#x1f4be;&#x1f4be;&#x1f4be; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f389;&#x1f389;&#x1f389; PERCENTAGE SERVICE SUCCESS: 0.25 &#x1f389;&#x1f389;&#x1f389; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f3af;&#x1f3af;&#x1f3af; GETPERCENTAGE() CALLED - CHECKING CACHE FIRST &#x1f3af;&#x1f3af;&#x1f3af; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f514;&#x1f514;&#x1f514; PERCENTAGE SERVICE SUBSCRIBED &#x1f514;&#x1f514;&#x1f514; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - ❌❌❌ CACHE MISS - CALLING fetchAndCachePercentage() ❌❌❌ 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f504;&#x1f504;&#x1f504; FETCH AND CACHE PERCENTAGE - CALLING EXTERNAL API WITH RETRY &#x1f504;&#x1f504;&#x1f504; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f4be;&#x1f4be;&#x1f4be; CACHED PERCENTAGE: 0.3 &#x1f4be;&#x1f4be;&#x1f4be; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f389;&#x1f389;&#x1f389; PERCENTAGE SERVICE SUCCESS: 0.3 &#x1f389;&#x1f389;&#x1f389; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f3af;&#x1f3af;&#x1f3af; GETPERCENTAGE() CALLED - CHECKING CACHE FIRST &#x1f3af;&#x1f3af;&#x1f3af; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f514;&#x1f514;&#x1f514; PERCENTAGE SERVICE SUBSCRIBED &#x1f514;&#x1f514;&#x1f514; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - ❌❌❌ CACHE MISS - CALLING fetchAndCachePercentage() ❌❌❌ 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f504;&#x1f504;&#x1f504; FETCH AND CACHE PERCENTAGE - CALLING EXTERNAL API WITH RETRY &#x1f504;&#x1f504;&#x1f504; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f4be;&#x1f4be;&#x1f4be; CACHED PERCENTAGE: 0.15 &#x1f4be;&#x1f4be;&#x1f4be; 
+[Test worker] 2025-07-03 16:57:00 ?[1;31mERROR?[0;39m ?[36mc.t.l.r.t.t.a.ExternalPercentageService?[0;39m - &#x1f389;&#x1f389;&#x1f389; PERCENTAGE SERVICE SUCCESS: 0.15 &#x1f389;&#x1f389;&#x1f389; 
 </pre>
 </span>
 </div>
@@ -120,7 +126,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 8.10.1</a> at 3 jul 2025 12:20:28</p>
+<a href="http://www.gradle.org">Gradle 8.10.1</a> at 3 jul 2025 16:57:01</p>
 </div>
 </div>
 </body>

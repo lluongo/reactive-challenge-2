@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,7 +32,6 @@ public class AuthorizedUserService {
 
     public Mono<AuthorizedUser> createUser(AuthorizedUserRequest request) {
         LocalDateTime now = LocalDateTime.now();
-
         return userRepository.findByUsername(request.getUsername())
                 .flatMap(existingUser -> Mono.<AuthorizedUser>error(
                         new IllegalArgumentException("Username already exists")))
@@ -48,7 +46,6 @@ public class AuthorizedUserService {
                                     .createdAt(now)
                                     .updatedAt(now)
                                     .build();
-
                             log.info("Creating new authorized user: {}", newUser);
                             return userRepository.save(newUser);
                         })));
@@ -62,9 +59,6 @@ public class AuthorizedUserService {
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("User not found with ID: " + id)));
     }
 
-    /**
-     * Desactiva un usuario internamente usando operadores reactivos.
-     */
     private Mono<AuthorizedUser> deactivateUserInternal(AuthorizedUser user) {
         return Mono.just(user)
                 .doOnNext(u -> {
@@ -81,9 +75,6 @@ public class AuthorizedUserService {
                 .defaultIfEmpty(false);
     }
 
-    /**
-     * Obtiene todos los usuarios como lista (usado por handlers).
-     */
     public Mono<List<AuthorizedUser>> findAllUsersAsList() {
         return findAllUsers()
                 .collectList()
@@ -91,9 +82,6 @@ public class AuthorizedUserService {
                 .doOnError(error -> log.error("Error retrieving users list: {}", error.getMessage()));
     }
 
-    /**
-     * Obtiene un usuario por ID desde string (usado por handlers).
-     */
     public Mono<AuthorizedUser> findUserByIdFromString(String idString) {
         return Mono.fromCallable(() -> Long.parseLong(idString))
                 .onErrorMap(NumberFormatException.class, 
@@ -103,9 +91,6 @@ public class AuthorizedUserService {
                 .doOnError(error -> log.error("Error retrieving user by ID {}: {}", idString, error.getMessage()));
     }
 
-    /**
-     * Desactiva un usuario por ID desde string (usado por handlers).
-     */
     public Mono<AuthorizedUser> deactivateUserFromString(String idString) {
         return Mono.fromCallable(() -> Long.parseLong(idString))
                 .onErrorMap(NumberFormatException.class, 

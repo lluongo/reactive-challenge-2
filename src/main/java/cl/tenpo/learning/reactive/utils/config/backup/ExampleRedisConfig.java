@@ -1,5 +1,4 @@
 package cl.tenpo.learning.reactive.utils.config;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,14 +7,11 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
-
 @Configuration
 public class ExampleRedisConfig {
-
     @Bean
     public ReactiveRedisTemplate<String, Object> reactiveRedisTemplate(final ReactiveRedisConnectionFactory connectionFactory,
                                                                        final ObjectMapper objectMapper) {
-
         RedisSerializationContext<String, Object> context = RedisSerializationContext
                 .<String, Object>newSerializationContext()
                 .key(RedisSerializer.string())
@@ -25,5 +21,4 @@ public class ExampleRedisConfig {
                 .build();
         return new ReactiveRedisTemplate<>(connectionFactory, context);
     }
-
 }

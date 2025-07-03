@@ -12,23 +12,15 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.time.Duration;
 
-/**
- * Servicio para gestionar la caché de porcentajes.
- */
 @Component
 @RequiredArgsConstructor
 public class PercentageCacheService {
 
     private static final Logger log = LoggerFactory.getLogger(PercentageCacheService.class);
-
+    
     private final ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
     private final TimeoutConfig timeoutConfig;
 
-    /**
-     * Obtiene el porcentaje almacenado en caché.
-     * 
-     * @return Mono con el porcentaje como BigDecimal, o Mono.empty() si no existe en caché
-     */
     public Mono<BigDecimal> getCachedPercentage() {
         return reactiveRedisTemplate.opsForValue().get(RedisConfig.PERCENTAGE_KEY)
                 .timeout(Duration.ofSeconds(5))
@@ -40,12 +32,6 @@ public class PercentageCacheService {
                 .checkpoint("after-cache-retrieval");
     }
 
-    /**
-     * Guarda un porcentaje en caché.
-     * 
-     * @param percentage el porcentaje a guardar
-     * @return Mono con el resultado de la operación de caché
-     */
     public Mono<Boolean> cachePercentage(BigDecimal percentage) {
         log.info("Caching percentage value: {}", percentage);
         return reactiveRedisTemplate.opsForValue()
@@ -58,12 +44,6 @@ public class PercentageCacheService {
                 .doOnSuccess(result -> log.debug("Cache operation completed: {}", result));
     }
 
-    /**
-     * Convierte un valor obtenido de la caché a BigDecimal.
-     * 
-     * @param value valor obtenido de la caché
-     * @return Mono con el porcentaje convertido a BigDecimal, o Mono.empty() si no se puede convertir
-     */
     private Mono<BigDecimal> convertCachedValueToBigDecimal(Object value) {
         return Mono.justOrEmpty(value)
                 .cast(Object.class)
@@ -75,9 +55,6 @@ public class PercentageCacheService {
                 }));
     }
 
-    /**
-     * Convierte el valor según su tipo usando operadores reactivos.
-     */
     private Mono<BigDecimal> convertByType(Object value) {
         return Mono.just(value)
                 .filter(BigDecimal.class::isInstance)
@@ -105,9 +82,6 @@ public class PercentageCacheService {
                 );
     }
 
-    /**
-     * Convierte String a BigDecimal manejando errores reactivamente.
-     */
     private Mono<BigDecimal> convertStringToBigDecimal(String stringValue) {
         return Mono.fromCallable(() -> new BigDecimal(stringValue))
                 .doOnNext(v -> log.info("Retrieved percentage from cache (as String): {}", v))

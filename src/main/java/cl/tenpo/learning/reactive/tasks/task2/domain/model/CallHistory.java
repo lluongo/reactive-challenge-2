@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -15,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Document(collection = "call_history")
 public class CallHistory {
+
     @Id
     private String id;
     private LocalDateTime timestamp;
@@ -24,7 +24,6 @@ public class CallHistory {
     private String response;
     private String error;
     private boolean successful;
-
     public static CallHistory createSuccessfulRecord(String endpoint, String method, String parameters, String response) {
         return CallHistory.builder()
                 .timestamp(LocalDateTime.now())
@@ -35,7 +34,6 @@ public class CallHistory {
                 .successful(true)
                 .build();
     }
-
     public static CallHistory createFailedRecord(String endpoint, String method, String parameters, String error) {
         return CallHistory.builder()
                 .timestamp(LocalDateTime.now())

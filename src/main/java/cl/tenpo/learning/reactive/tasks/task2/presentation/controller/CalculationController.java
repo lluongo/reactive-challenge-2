@@ -11,29 +11,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
 import jakarta.validation.Valid;
 
-/**
- * Controller REST para operaciones de cálculo.
- * Delega toda la lógica de negocio al servicio correspondiente.
- */
 @Slf4j
 @RestController
 @RequestMapping("")
 @RequiredArgsConstructor
 public class CalculationController {
-
     private final CalculationService calculationService;
 
-    /**
-     * Realiza un cálculo sumando dos números y aplicando un porcentaje
-     * obtenido de un servicio externo o de la caché.
-     * 
-     * @param calculationRequest DTO con los números a calcular
-     * @param exchange Intercambio de información HTTP
-     * @return DTO con el resultado del cálculo
-     */
     @PostMapping("${app.api.endpoints.calculation}")
     public Mono<CalculationResponse> calculate(
             @Valid @RequestBody CalculationRequest calculationRequest,

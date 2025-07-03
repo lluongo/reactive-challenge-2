@@ -19,13 +19,15 @@ public class RetryExhaustedListener {
 
     @EventListener
     public void handleRetryExhaustedEvent(RetryExhaustedEvent event) {
-        log.error("Retry exhausted event received: {}", event.getErrorData());
+        log.error("🎯🎯🎯 RETRY EXHAUSTED EVENT RECEIVED: {} 🎯🎯🎯", event.getErrorData());
+        
         kafkaTemplate.send(
                 kafkaConfig.getRetryExhaustedTopic(),
                 event.getErrorData()
         )
-                .doOnSuccess(senderResult -> log.info("Message sent to topic: {}", kafkaConfig.getRetryExhaustedTopic()))
-                .doOnError(e -> log.error("Error sending message to Kafka: {}", e.getMessage()))
+                .doOnSuccess(senderResult -> log.error("✅✅✅ MESSAGE SENT TO KAFKA TOPIC [{}]: {} ✅✅✅", 
+                        kafkaConfig.getRetryExhaustedTopic(), event.getErrorData()))
+                .doOnError(e -> log.error("❌❌❌ ERROR SENDING MESSAGE TO KAFKA: {} ❌❌❌", e.getMessage()))
                 .subscribe();
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +25,6 @@ public class RequestLoggingFilter implements WebFilter {
     private final CallHistoryService callHistoryService;
     private final ObjectMapper objectMapper;
     
-    // Lista de rutas excluidas del logging
     private final List<String> excludedPaths = Arrays.asList("/actuator", "/swagger", "/v3/api-docs");
 
     @Override
@@ -35,14 +33,10 @@ public class RequestLoggingFilter implements WebFilter {
         String path = request.getPath().value();
         String method = request.getMethod().name();
         
-        // Skip logging for excluded paths
-        if (shouldExcludePath(path)) {
+        if (isExcludedPath(path)) {
             return chain.filter(exchange);
         }
-
         log.info("Incoming request: {} {}", method, path);
-
-        // Replace the exchange with a wrapper that captures the response
         ResponseCaptureExchange responseCapture = new ResponseCaptureExchange(exchange);
         
         return chain.filter(responseCapture)
@@ -59,10 +53,9 @@ public class RequestLoggingFilter implements WebFilter {
                 }));
     }
 
-    private boolean shouldExcludePath(String path) {
+    private boolean isExcludedPath(String path) {
         return excludedPaths.stream().anyMatch(path::startsWith);
     }
-
     @SneakyThrows
     private Mono<Void> recordRequest(String endpoint, String method, String parameters, String response, int statusCode) {
         return Mono.just(statusCode)

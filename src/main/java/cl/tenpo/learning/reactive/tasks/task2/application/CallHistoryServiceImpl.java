@@ -2,11 +2,11 @@ package cl.tenpo.learning.reactive.tasks.task2.application;
 
 import cl.tenpo.learning.reactive.tasks.task2.application.port.CallHistoryService;
 import cl.tenpo.learning.reactive.tasks.task2.domain.model.CallHistory;
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.factory.PageableFactory;
 import cl.tenpo.learning.reactive.tasks.task2.infrastructure.persistence.CallHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -17,21 +17,15 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Implementación del servicio para registrar y recuperar el historial de llamadas a la API.
- */
 @Service
 @RequiredArgsConstructor
 public class CallHistoryServiceImpl implements CallHistoryService {
 
     private static final Logger log = LoggerFactory.getLogger(CallHistoryServiceImpl.class);
     private static final Duration DATABASE_TIMEOUT = Duration.ofSeconds(10);
-
     private final CallHistoryRepository callHistoryRepository;
+    private final PageableFactory pageableFactory;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Flux<CallHistory> getCallHistory(Pageable pageable) {
         return callHistoryRepository.findAllBy(pageable)
@@ -44,26 +38,14 @@ public class CallHistoryServiceImpl implements CallHistoryService {
                 .checkpoint("call-history-retrieval");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Mono<CallHistory> recordSuccessfulRequest(String endpoint, String method, String parameters, String response) {
-        CallHistory history = CallHistory.builder()
-                .timestamp(LocalDateTime.now())
-                .endpoint(endpoint)
-                .method(method)
-                .parameters(parameters)
-                .response(response)
-                .successful(true)
-                .build();
-
-        // Run asynchronously in a separate thread to avoid blocking or impacting response time
-        return Mono.defer(() -> callHistoryRepository.save(history))
+        return createHistoryRecord(endpoint, method, parameters, response, true)
+                .flatMap(callHistoryRepository::save)
                 .subscribeOn(Schedulers.boundedElastic())
                 .timeout(DATABASE_TIMEOUT)
                 .doOnSuccess(saved -> log.info("Successfully recorded request history: {}", saved.getId()))
-                .doOnError(error -> log.error("Failed to record request history: {}", error.getMessage()))
+                .doOnError(e -> log.error("Failed to record request history: {}", e.getMessage()))
                 .onErrorResume(e -> {
                     log.warn("Suppressing error in history recording: {}", e.getMessage());
                     return Mono.empty();
@@ -71,22 +53,10 @@ public class CallHistoryServiceImpl implements CallHistoryService {
                 .checkpoint("record-success-history");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Mono<CallHistory> recordFailedRequest(String endpoint, String method, String parameters, String error) {
-        CallHistory history = CallHistory.builder()
-                .timestamp(LocalDateTime.now())
-                .endpoint(endpoint)
-                .method(method)
-                .parameters(parameters)
-                .error(error)
-                .successful(false)
-                .build();
-
-        // Run asynchronously in a separate thread to avoid blocking or impacting response time
-        return Mono.defer(() -> callHistoryRepository.save(history))
+        return createHistoryRecord(endpoint, method, parameters, error, false)
+                .flatMap(callHistoryRepository::save)
                 .subscribeOn(Schedulers.boundedElastic())
                 .timeout(DATABASE_TIMEOUT)
                 .doOnSuccess(saved -> log.info("Successfully recorded failed request history: {}", saved.getId()))
@@ -98,9 +68,6 @@ public class CallHistoryServiceImpl implements CallHistoryService {
                 .checkpoint("record-failed-history");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Mono<List<CallHistory>> getCallHistoryAsList(Pageable pageable) {
         return getCallHistory(pageable)
@@ -109,17 +76,31 @@ public class CallHistoryServiceImpl implements CallHistoryService {
                 .doOnError(error -> log.error("Error retrieving call history list: {}", error.getMessage()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Mono<List<CallHistory>> getCallHistoryFromParams(Integer page, Integer size) {
-        int pageNumber = page != null ? page : 0;
-        int pageSize = size != null ? size : 10;
-        
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        log.info("Creating pageable for call history: page={}, size={}", pageNumber, pageSize);
-        
+        Pageable pageable = pageableFactory.createPageable(page, size);
+        log.info("Created pageable for call history: page={}, size={}",
+                pageable.getPageNumber(), pageable.getPageSize());
+
         return getCallHistoryAsList(pageable);
+    }
+
+    private Mono<CallHistory> createHistoryRecord(String endpoint, String method, String parameters, String responseOrError, boolean successful) {
+        return Mono.fromCallable(() -> {
+            CallHistory.CallHistoryBuilder builder = CallHistory.builder()
+                    .timestamp(LocalDateTime.now())
+                    .endpoint(endpoint)
+                    .method(method)
+                    .parameters(parameters)
+                    .successful(successful);
+
+            if (successful) {
+                builder.response(responseOrError);
+            } else {
+                builder.error(responseOrError);
+            }
+
+            return builder.build();
+        });
     }
 }
