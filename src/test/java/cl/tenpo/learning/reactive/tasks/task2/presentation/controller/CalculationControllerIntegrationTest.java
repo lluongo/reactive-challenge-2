@@ -1,7 +1,7 @@
 package cl.tenpo.learning.reactive.tasks.task2.presentation.controller;
 
-import cl.tenpo.learning.reactive.tasks.task2.application.CalculationService;
-import cl.tenpo.learning.reactive.tasks.task2.application.CallHistoryService;
+import cl.tenpo.learning.reactive.tasks.task2.application.port.CalculationService;
+import cl.tenpo.learning.reactive.tasks.task2.application.port.CallHistoryService;
 import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.CalculationRequest;
 import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.CalculationResponse;
 import org.junit.jupiter.api.Test;

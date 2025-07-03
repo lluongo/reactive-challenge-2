@@ -52,6 +52,7 @@ app:
     endpoints:
       calculation: "/v1/calculation"
       users: "/v1/users"
+      history: "/v1/history"
       debug: "/debug"
       debug-routes: "/routes"
       debug-ping: "/ping"
@@ -60,6 +61,10 @@ app:
     external:
       base-url: "/external-api"
       percentage-path: "/percentage"
+  
+  retry:
+    max-attempts: 3
+    initial-backoff: PT1S
   
   kafka:
     topics:

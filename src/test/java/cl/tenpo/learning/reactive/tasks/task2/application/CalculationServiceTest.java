@@ -1,5 +1,6 @@
 package cl.tenpo.learning.reactive.tasks.task2.application;
 
+import cl.tenpo.learning.reactive.tasks.task2.application.port.PercentageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,10 +18,10 @@ import static org.mockito.Mockito.when;
 public class CalculationServiceTest {
 
     @Mock
-    private ExternalPercentageService externalPercentageService;
+    private PercentageService percentageService;
 
     @InjectMocks
-    private CalculationService calculationService;
+    private CalculationServiceImpl calculationService;
 
     private BigDecimal num1;
     private BigDecimal num2;
@@ -36,12 +37,12 @@ public class CalculationServiceTest {
     void calculateWithPercentage_withValidPercentage_shouldApplyPercentageCorrectly() {
         // Given
         BigDecimal percentage = new BigDecimal("0.1"); // 10%
-        when(externalPercentageService.getPercentage()).thenReturn(Mono.just(percentage));
+        when(percentageService.getPercentage()).thenReturn(Mono.just(percentage));
 
         // When & Then
         StepVerifier.create(calculationService.calculateWithPercentage(num1, num2))
                 .expectNextMatches(result -> 
-                    result.compareTo(new BigDecimal("16.5")) == 0 // (10 + 5) + (10 + 5) * 0.1 = 15 + 1.5 = 16.5
+                    result.compareTo(new BigDecimal("16.50")) == 0 // (10 + 5) + (10 + 5) * 0.1 = 15 + 1.5 = 16.5
                 )
                 .verifyComplete();
     }
@@ -50,12 +51,12 @@ public class CalculationServiceTest {
     void calculateWithPercentage_withZeroPercentage_shouldReturnSumOnly() {
         // Given
         BigDecimal percentage = new BigDecimal("0.0"); // 0%
-        when(externalPercentageService.getPercentage()).thenReturn(Mono.just(percentage));
+        when(percentageService.getPercentage()).thenReturn(Mono.just(percentage));
 
         // When & Then
         StepVerifier.create(calculationService.calculateWithPercentage(num1, num2))
                 .expectNextMatches(result -> 
-                    result.compareTo(new BigDecimal("15.0")) == 0 // (10 + 5) + (10 + 5) * 0 = 15
+                    result.compareTo(new BigDecimal("15.00")) == 0 // 10 + 5 = 15
                 )
                 .verifyComplete();
     }
@@ -63,12 +64,12 @@ public class CalculationServiceTest {
     @Test
     void calculateWithPercentage_withErrorFromPercentageService_shouldPropagateError() {
         // Given
-        RuntimeException expectedException = new RuntimeException("Test exception");
-        when(externalPercentageService.getPercentage()).thenReturn(Mono.error(expectedException));
+        String errorMessage = "Test exception";
+        when(percentageService.getPercentage()).thenReturn(Mono.error(new RuntimeException(errorMessage)));
 
         // When & Then
         StepVerifier.create(calculationService.calculateWithPercentage(num1, num2))
-                .expectErrorMatches(error -> error == expectedException)
+                .expectError(RuntimeException.class)
                 .verify();
     }
 }

@@ -1,29 +1,30 @@
 package cl.tenpo.learning.reactive.tasks.task2.application;
 
+import cl.tenpo.learning.reactive.tasks.task2.application.port.CalculationService;
+import cl.tenpo.learning.reactive.tasks.task2.application.port.PercentageService;
 import cl.tenpo.learning.reactive.tasks.task2.domain.model.Calculation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-public class CalculationService {
+public class CalculationServiceImpl implements CalculationService {
 
-    private final ExternalPercentageService externalPercentageService;
+    private static final Logger log = LoggerFactory.getLogger(CalculationServiceImpl.class);
+    
+    private final PercentageService percentageService;
 
     /**
-     * Realiza un cálculo sumando dos números y aplicando un porcentaje adicional
-     * obtenido del servicio externo.
-     * 
-     * @param num1 primer número para el cálculo
-     * @param num2 segundo número para el cálculo
-     * @return Mono con el resultado del cálculo
+     * {@inheritDoc}
      */
+    @Override
     public Mono<BigDecimal> calculateWithPercentage(BigDecimal num1, BigDecimal num2) {
         log.info("Calculating with numbers: {} and {}", num1, num2);
         
@@ -32,7 +33,7 @@ public class CalculationService {
             return Mono.error(new IllegalArgumentException("Input numbers cannot be null"));
         }
         
-        return externalPercentageService.getPercentage()
+        return percentageService.getPercentage()
                 .map(percentage -> performCalculation(num1, num2, percentage))
                 .doOnNext(result -> log.info("Calculation completed successfully with result: {}", result))
                 .doOnError(error -> log.error("Error during calculation: {}", error.getMessage()))
@@ -44,10 +45,12 @@ public class CalculationService {
      */
     private BigDecimal performCalculation(BigDecimal num1, BigDecimal num2, BigDecimal percentage) {
         Calculation calculation = Calculation.of(num1, num2, percentage);
-        BigDecimal result = calculation.getResult().setScale(2, RoundingMode.HALF_UP);
+        BigDecimal sum = num1.add(num2);
+        BigDecimal percentageAmount = sum.multiply(percentage);
+        BigDecimal result = sum.add(percentageAmount).setScale(2, RoundingMode.HALF_UP);
         
         log.info("Calculation result: {} + {} = {}, applying percentage {}: final result = {}", 
-                num1, num2, num1.add(num2), percentage, result);
+                num1, num2, sum, percentage, result);
                 
         return result;
     }

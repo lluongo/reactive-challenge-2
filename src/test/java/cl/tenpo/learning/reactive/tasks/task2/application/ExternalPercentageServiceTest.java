@@ -1,75 +1,50 @@
 package cl.tenpo.learning.reactive.tasks.task2.application;
 
-import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.RedisConfig;
-import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.TimeoutConfig;
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.cache.PercentageCacheService;
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.client.ExternalApiClient;
 import cl.tenpo.learning.reactive.tasks.task2.infrastructure.exception.ServiceUnavailableException;
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.retry.RetryStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.core.ReactiveValueOperations;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import reactor.util.retry.Retry;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ExternalPercentageServiceTest {
 
     @Mock
-    private WebClient webClient;
+    private ExternalApiClient externalApiClient;
 
     @Mock
-    private ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
-    
-    @Mock
-    private ReactiveValueOperations<String, Object> valueOps;
+    private PercentageCacheService cacheService;
 
     @Mock
-    private ApplicationEventPublisher eventPublisher;
-    
-    @Mock
-    private TimeoutConfig timeoutConfig;
-
-    @Mock
-    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
-    
-    @Mock
-    private WebClient.RequestHeadersSpec requestHeadersSpec;
-    
-    @Mock
-    private WebClient.ResponseSpec responseSpec;
+    private RetryStrategy retryStrategy;
 
     private ExternalPercentageService percentageService;
-    private static final String PERCENTAGE_PATH = "/external-api/percentage";
 
     @BeforeEach
     void setUp() {
-        when(timeoutConfig.getExternalApiTimeout()).thenReturn(Duration.ofSeconds(20));
-        when(timeoutConfig.getCacheTimeout()).thenReturn(Duration.ofSeconds(5));
+        percentageService = new ExternalPercentageService(externalApiClient, cacheService, retryStrategy);
         
-        percentageService = new ExternalPercentageService(webClient, reactiveRedisTemplate, eventPublisher, timeoutConfig);
-        ReflectionTestUtils.setField(percentageService, "percentagePath", PERCENTAGE_PATH);
-        when(reactiveRedisTemplate.opsForValue()).thenReturn(valueOps);
+        // Mock para RetryStrategy
+        when(retryStrategy.getRetrySpec(any())).thenReturn(Retry.max(1));
     }
 
     @Test
     void getPercentage_whenCacheHasValue_shouldReturnCachedValue() {
         // Given - Un valor en la caché
         BigDecimal expectedValue = new BigDecimal("0.1");
-        when(valueOps.get(RedisConfig.PERCENTAGE_KEY)).thenReturn(Mono.just(expectedValue));
+        when(cacheService.getCachedPercentage()).thenReturn(Mono.just(expectedValue));
 
         // When - Obtener el porcentaje
         Mono<BigDecimal> result = percentageService.getPercentage();
@@ -80,27 +55,20 @@ public class ExternalPercentageServiceTest {
                 .verifyComplete();
                 
         // Verificar que se intentó obtener de la caché
-        verify(valueOps).get(RedisConfig.PERCENTAGE_KEY);
+        verify(cacheService).getCachedPercentage();
         
         // Verificar que no se intentó obtener del API externo
-        verify(webClient, never()).get();
+        verify(externalApiClient, never()).fetchPercentage();
     }
 
     @Test
     void getPercentage_whenCacheEmptyAndApiSucceeds_shouldFetchFromApiAndCache() {
         // Given
-        String percentageStr = "0.15";
-        BigDecimal expectedValue = new BigDecimal(percentageStr);
-        Map<String, Object> apiResponse = new HashMap<>();
-        apiResponse.put("percentage", percentageStr);
+        BigDecimal expectedValue = new BigDecimal("0.15");
         
-        when(valueOps.get(RedisConfig.PERCENTAGE_KEY)).thenReturn(Mono.empty());
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(eq(PERCENTAGE_PATH))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Map.class)).thenReturn(Mono.just(apiResponse));
-        when(valueOps.set(eq(RedisConfig.PERCENTAGE_KEY), eq(expectedValue), any(Duration.class)))
-            .thenReturn(Mono.just(Boolean.TRUE));
+        when(cacheService.getCachedPercentage()).thenReturn(Mono.empty());
+        when(externalApiClient.fetchPercentage()).thenReturn(Mono.just(expectedValue));
+        when(cacheService.cachePercentage(expectedValue)).thenReturn(Mono.just(Boolean.TRUE));
 
         // When & Then
         StepVerifier.create(percentageService.getPercentage())
@@ -111,11 +79,11 @@ public class ExternalPercentageServiceTest {
     @Test
     void getPercentage_whenCacheEmptyAndApiFails_shouldThrowServiceUnavailableException() {
         // Given
-        when(valueOps.get(RedisConfig.PERCENTAGE_KEY)).thenReturn(Mono.empty());
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(eq(PERCENTAGE_PATH))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Map.class)).thenReturn(Mono.error(new RuntimeException("API Error")));
+        when(cacheService.getCachedPercentage()).thenReturn(Mono.empty());
+        when(externalApiClient.fetchPercentage()).thenReturn(Mono.error(new RuntimeException("API Error")));
+        when(retryStrategy.getRetrySpec(any())).thenReturn(Retry.max(1)
+                .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> 
+                    new ServiceUnavailableException("Failed to fetch percentage")));
         
         // When & Then
         StepVerifier.create(percentageService.getPercentage())
@@ -127,16 +95,10 @@ public class ExternalPercentageServiceTest {
     void getPercentage_whenCacheEmpty_shouldFetchFromApi() {
         // Given
         BigDecimal expectedValue = new BigDecimal("0.2");
-        Map<String, String> apiResponse = new HashMap<>();
-        apiResponse.put("percentage", "0.2");
         
-        when(valueOps.get(RedisConfig.PERCENTAGE_KEY)).thenReturn(Mono.empty());
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(PERCENTAGE_PATH)).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Map.class)).thenReturn(Mono.just(apiResponse));
-        when(valueOps.set(eq(RedisConfig.PERCENTAGE_KEY), any(BigDecimal.class), any(Duration.class)))
-                .thenReturn(Mono.just(Boolean.TRUE));
+        when(cacheService.getCachedPercentage()).thenReturn(Mono.empty());
+        when(externalApiClient.fetchPercentage()).thenReturn(Mono.just(expectedValue));
+        when(cacheService.cachePercentage(expectedValue)).thenReturn(Mono.just(Boolean.TRUE));
         
         // When & Then
         StepVerifier.create(percentageService.getPercentage())

@@ -1,6 +1,6 @@
 package cl.tenpo.learning.reactive.tasks.task2.infrastructure.filter;
 
-import cl.tenpo.learning.reactive.tasks.task2.application.CallHistoryService;
+import cl.tenpo.learning.reactive.tasks.task2.application.port.CallHistoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
