@@ -10,6 +10,5 @@ public interface CalculationService {
     Mono<BigDecimal> calculateWithPercentage(BigDecimal num1, BigDecimal num2);
     
     Mono<CalculationResponse> processCalculationRequest(CalculationRequest request);
-    
-    Mono<CalculationRequest> validateCalculationRequest(CalculationRequest request);
+
 }

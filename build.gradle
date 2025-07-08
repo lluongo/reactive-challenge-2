@@ -11,10 +11,6 @@ java {
     sourceCompatibility = '21'
 }
 
-springBoot {
-    mainClass = 'cl.tenpo.learning.reactive.tasks.task2.T2Application'
-}
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -38,10 +34,9 @@ dependencies {
     implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-data-redis-reactive')
     implementation (group: 'org.springframework.kafka', name: 'spring-kafka')
     implementation (group: 'io.projectreactor.kafka', name:'reactor-kafka', version: "$kafka")
-    
-    // Añadimos las dependencias necesarias para validación
     implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-validation')
     implementation (group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.4')
+    implementation ('io.netty:netty-resolver-dns-native-macos:4.1.94.Final:osx-aarch_64')
 
     implementation (group: 'net.datafaker', name: 'datafaker', version: "$faker")
     implementation (group: 'ch.qos.logback', name: 'logback-classic')

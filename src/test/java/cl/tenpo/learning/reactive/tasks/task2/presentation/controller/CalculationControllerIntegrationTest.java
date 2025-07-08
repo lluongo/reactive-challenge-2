@@ -12,7 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
 import java.math.BigDecimal;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -22,8 +24,10 @@ public class CalculationControllerIntegrationTest {
 
     @Mock
     private CalculationService calculationService;
+    
     @InjectMocks
     private CalculationController controller;
+    
     @Mock
     private ServerWebExchange exchange;
 
@@ -36,15 +40,18 @@ public class CalculationControllerIntegrationTest {
     @Test
     void calculate_shouldReturnCorrectResult() {
         CalculationRequest request = new CalculationRequest(BigDecimal.valueOf(10), BigDecimal.valueOf(5));
-        CalculationResponse expectedResponse = new CalculationResponse(
-            BigDecimal.valueOf(16.5), 
-            BigDecimal.valueOf(10), 
-            BigDecimal.valueOf(5)
-        );
+        
+        CalculationResponse expectedResponse = CalculationResponse.builder()
+            .result(BigDecimal.valueOf(16.5))
+            .num1(BigDecimal.valueOf(10))
+            .num2(BigDecimal.valueOf(5))
+            .build();
         
         when(calculationService.processCalculationRequest(any()))
                 .thenReturn(Mono.just(expectedResponse));
+        
         Mono<CalculationResponse> result = controller.calculate(request, exchange);
+        
         StepVerifier.create(result)
                 .expectNextMatches(response -> 
                     response.getResult().equals(BigDecimal.valueOf(16.5)) &&
@@ -57,15 +64,18 @@ public class CalculationControllerIntegrationTest {
     @Test
     void calculate_withValidInputs_shouldProcessCorrectly() {
         CalculationRequest request = new CalculationRequest(BigDecimal.valueOf(20), BigDecimal.valueOf(30));
-        CalculationResponse expectedResponse = new CalculationResponse(
-            BigDecimal.valueOf(75.0), 
-            BigDecimal.valueOf(20), 
-            BigDecimal.valueOf(30)
-        );
+        
+        CalculationResponse expectedResponse = CalculationResponse.builder()
+            .result(BigDecimal.valueOf(75.0))
+            .num1(BigDecimal.valueOf(20))
+            .num2(BigDecimal.valueOf(30))
+            .build();
         
         when(calculationService.processCalculationRequest(any()))
                 .thenReturn(Mono.just(expectedResponse));
+        
         Mono<CalculationResponse> result = controller.calculate(request, exchange);
+        
         StepVerifier.create(result)
                 .expectNextMatches(response -> response.getResult().equals(BigDecimal.valueOf(75.0)))
                 .verifyComplete();

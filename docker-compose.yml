@@ -38,27 +38,27 @@ services:
       - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
     depends_on:
       - zookeeper-luongo
-  api-luongo:
-    environment:
-      - APPLICATION_PORT=8083
-      - POSTGRES_USER=postgresql
-      - POSTGRES_PASS=postgresql
-      - POSTGRES_HOST=postgres-luongo
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB_NAME=learning_reactive_r2dbc
-      - MONGO_USER=mongodb
-      - MONGO_PASS=mongodb
-      - MONGO_HOST=mongodb-luongo:27017
-      - MONGO_DB_NAME=learning_reactive_mongo
-      - REDIS_HOST=redis-luongo
-      - REDIS_PORT=6379
-      - KAFKA_HOST=kafka-luongo:9092
-      - KAFKA_SECURITY_PROTOCOL=PLAINTEXT
-    build: .
-    ports:
-      - "8083:8083"
-    depends_on:
-      - postgres-luongo
-      - mongodb-luongo
-      - redis-luongo
-      - kafka-luongo
+#  api-luongo:
+#    environment:
+#      - APPLICATION_PORT=8083
+#      - POSTGRES_USER=postgresql
+#      - POSTGRES_PASS=postgresql
+#      - POSTGRES_HOST=postgres-luongo
+#      - POSTGRES_PORT=5432
+#      - POSTGRES_DB_NAME=learning_reactive_r2dbc
+#      - MONGO_USER=mongodb
+#      - MONGO_PASS=mongodb
+#      - MONGO_HOST=mongodb-luongo:27017
+#      - MONGO_DB_NAME=learning_reactive_mongo
+#      - REDIS_HOST=redis-luongo
+#      - REDIS_PORT=6379
+#      - KAFKA_HOST=kafka-luongo:9092
+#      - KAFKA_SECURITY_PROTOCOL=PLAINTEXT
+#    build: .
+#    ports:
+#      - "8083:8083"
+#    depends_on:
+#      - postgres-luongo
+#      - mongodb-luongo
+#      - redis-luongo
+#      - kafka-luongo

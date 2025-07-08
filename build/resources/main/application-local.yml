@@ -8,7 +8,7 @@ POSTGRES_DB_NAME: learning_reactive_r2dbc
 
 MONGO_USER: mongodb
 MONGO_PASS: mongodb
-MONGO_HOST: 127.0.0.1:27017
+MONGO_HOST: localhost:27017
 MONGO_DB_NAME: learning_reactive_mongo
 
 REDIS_HOST: localhost

@@ -1,5 +1,7 @@
 package cl.tenpo.learning.reactive.tasks.task2.infrastructure.client;
 
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.TimeoutConfig;
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.retry.RetryStrategy;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -18,6 +21,8 @@ public class ExternalApiClient {
     private static final Logger log = LoggerFactory.getLogger(ExternalApiClient.class);
     
     private final WebClient webClient;
+    private final TimeoutConfig timeoutConfig;
+    private final RetryStrategy retryStrategy;
     
     @Value("${app.api.external.base-url}${app.api.external.percentage-path}")
     private String percentagePath;
@@ -29,19 +34,23 @@ public class ExternalApiClient {
                 .uri(percentagePath)
                 .retrieve()
                 .bodyToMono(Map.class)
-                .flatMap(this::extractPercentageFromResponseReactively)
-                .doOnSubscribe(s -> log.error("🌐🌐🌐 CALLING EXTERNAL API: {} 🌐🌐🌐", percentagePath))
-                .doOnError(err -> log.error("🌐🌐🌐 EXTERNAL API ERROR: {} 🌐🌐🌐", 
-                        err != null ? err.toString() : "Unknown error"));
+                .timeout(timeoutConfig.getExternalApi())
+                .retryWhen(retryStrategy.getRetrySpec(BigDecimal.class))
+                .mapNotNull(this::extractPercentageFromResponse)
+                .doOnDiscard(Object.class, response -> 
+                    log.warn(" Respuesta sin porcentaje válido: {}", response))
+                .flatMap(this::parsePercentageReactively)
+                .doOnSubscribe(s -> log.info(" Iniciando llamada API: {}", percentagePath))
+                .doOnNext(value -> log.info(" Porcentaje obtenido: {}", value))
+                .doOnError(err -> log.error(" Error API: {}", err.toString()));
     }
 
-    private Mono<BigDecimal> extractPercentageFromResponseReactively(Map<String, Object> response) {
-        String percentageStr = (String) response.get("percentage");
-        log.info("Received percentage from external API: {}", percentageStr);
-        
-        return parsePercentageReactively(percentageStr);
+    private String extractPercentageFromResponse(Map<String, Object> response) {
+        return Optional.ofNullable(response)
+                .map(r -> (String) r.get("percentage"))
+                .orElse(null);
     }
-
+    
     private Mono<BigDecimal> parsePercentageReactively(String percentageStr) {
         return Mono.fromCallable(() -> new BigDecimal(percentageStr))
                 .onErrorResume(NumberFormatException.class, error -> {

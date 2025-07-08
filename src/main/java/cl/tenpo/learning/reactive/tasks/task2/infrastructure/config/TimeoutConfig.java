@@ -10,7 +10,7 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "app.timeouts")
 public class TimeoutConfig {
     
-    private Duration externalApiTimeout = Duration.ofSeconds(20);
-    private Duration cacheTimeout = Duration.ofSeconds(5);
-    private Duration databaseTimeout = Duration.ofSeconds(10);
+    private Duration externalApi;
+    private Duration cacheOperation;
+    private Duration databaseOperation;
 }

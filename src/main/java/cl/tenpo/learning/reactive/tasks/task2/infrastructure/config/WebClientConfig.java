@@ -11,7 +11,6 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -25,11 +24,11 @@ public class WebClientConfig {
     
     @Bean
     public WebClient webClient() {
-        int timeoutSeconds = (int) timeoutConfig.getExternalApiTimeout().getSeconds();
+        int timeoutSeconds = (int) timeoutConfig.getExternalApi().getSeconds();
         
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-                .responseTimeout(timeoutConfig.getExternalApiTimeout())
+                .responseTimeout(timeoutConfig.getExternalApi())
                 .doOnConnected(conn -> conn
                         .addHandlerLast(new ReadTimeoutHandler(timeoutSeconds, TimeUnit.SECONDS))
                         .addHandlerLast(new WriteTimeoutHandler(timeoutSeconds, TimeUnit.SECONDS)));

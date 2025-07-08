@@ -12,9 +12,4 @@ public class RetryExhaustedEvent extends ApplicationEvent {
         super(errorData);
         this.errorData = errorData;
     }
-    
-    public RetryExhaustedEvent(String errorMessage) {
-        super(errorMessage);
-        this.errorData = Map.of("error", errorMessage);
-    }
 }

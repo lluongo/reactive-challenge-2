@@ -1,6 +1,6 @@
 package cl.tenpo.learning.reactive.tasks.task2.testConfig;
 
-import cl.tenpo.learning.reactive.utils.config.BaseJacksonConfig;
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.JacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import redis.embedded.RedisServer;
 import java.io.IOException;
 
-@Import(BaseJacksonConfig.class)
+@Import(JacksonConfig.class)
 @Configuration
 public class E2ETestConfiguration {
 

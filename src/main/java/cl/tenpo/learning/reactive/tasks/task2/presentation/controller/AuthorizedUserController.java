@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -41,5 +43,13 @@ public class AuthorizedUserController {
     public Mono<AuthorizedUser> getUserById(@PathVariable Long id) {
         log.info("Request to get user with id: {}", id);
         return userService.findUserById(id);
+    }
+    
+    @PostMapping("${app.api.endpoints.users}/{username}/activate")
+    public Mono<AuthorizedUser> activateUser(@PathVariable String username) {
+        log.info("Request to activate user: {}", username);
+        return userService.activateUser(username)
+                .doOnSuccess(user -> log.info("User activated successfully: {}", username))
+                .doOnError(e -> log.error("Error activating user: {}", e.getMessage()));
     }
 }

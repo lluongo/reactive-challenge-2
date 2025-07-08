@@ -2,6 +2,8 @@ package cl.tenpo.learning.reactive.tasks.task2.application;
 
 import cl.tenpo.learning.reactive.tasks.task2.application.port.CallHistoryService;
 import cl.tenpo.learning.reactive.tasks.task2.domain.model.CallHistory;
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.PaginationConfig;
+import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.TimeoutConfig;
 import cl.tenpo.learning.reactive.tasks.task2.infrastructure.factory.PageableFactory;
 import cl.tenpo.learning.reactive.tasks.task2.infrastructure.persistence.CallHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,94 +15,109 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Implementación del servicio de historial de llamadas
+ */
 @Service
 @RequiredArgsConstructor
 public class CallHistoryServiceImpl implements CallHistoryService {
 
     private static final Logger log = LoggerFactory.getLogger(CallHistoryServiceImpl.class);
-    private static final Duration DATABASE_TIMEOUT = Duration.ofSeconds(10);
+    
     private final CallHistoryRepository callHistoryRepository;
     private final PageableFactory pageableFactory;
+    private final TimeoutConfig timeoutConfig;
+    private final PaginationConfig paginationConfig;
 
+    /**
+     * Obtiene el historial de llamadas paginado
+     */
     @Override
     public Flux<CallHistory> getCallHistory(Pageable pageable) {
         return callHistoryRepository.findAllBy(pageable)
-                .timeout(DATABASE_TIMEOUT)
-                .doOnError(error -> log.error("Error retrieving call history: {}", error.getMessage()))
-                .onErrorResume(e -> {
-                    log.error("Error fetching call history, returning empty: {}", e.getMessage());
-                    return Flux.empty();
-                })
+                .timeout(timeoutConfig.getDatabaseOperation())
+                .doOnNext(history -> log.debug("Historia de llamada recuperada: {}", history.getId()))
+                .doOnError(error -> log.error("Error recuperando historial: {}", error.getMessage()))
+                .onErrorResume(ex -> Flux.empty())
                 .checkpoint("call-history-retrieval");
     }
 
+    /**
+     * Registra una solicitud exitosa
+     */
     @Override
     public Mono<CallHistory> recordSuccessfulRequest(String endpoint, String method, String parameters, String response) {
-        return createHistoryRecord(endpoint, method, parameters, response, true)
-                .flatMap(callHistoryRepository::save)
-                .subscribeOn(Schedulers.boundedElastic())
-                .timeout(DATABASE_TIMEOUT)
-                .doOnSuccess(saved -> log.info("Successfully recorded request history: {}", saved.getId()))
-                .doOnError(e -> log.error("Failed to record request history: {}", e.getMessage()))
-                .onErrorResume(e -> {
-                    log.warn("Suppressing error in history recording: {}", e.getMessage());
-                    return Mono.empty();
-                })
+        return Mono.just(buildHistoryRecord(endpoint, method, parameters, response, true))
+                .flatMap(this::saveHistoryRecord)
                 .checkpoint("record-success-history");
     }
 
+    /**
+     * Registra una solicitud fallida
+     */
     @Override
     public Mono<CallHistory> recordFailedRequest(String endpoint, String method, String parameters, String error) {
-        return createHistoryRecord(endpoint, method, parameters, error, false)
-                .flatMap(callHistoryRepository::save)
-                .subscribeOn(Schedulers.boundedElastic())
-                .timeout(DATABASE_TIMEOUT)
-                .doOnSuccess(saved -> log.info("Successfully recorded failed request history: {}", saved.getId()))
-                .doOnError(e -> log.error("Failed to record request history: {}", e.getMessage()))
-                .onErrorResume(e -> {
-                    log.warn("Suppressing error in failed history recording: {}", e.getMessage());
-                    return Mono.empty();
-                })
+        return Mono.just(buildHistoryRecord(endpoint, method, parameters, error, false))
+                .flatMap(this::saveHistoryRecord)
                 .checkpoint("record-failed-history");
     }
 
+    /**
+     * Guarda un registro de historial manejando errores
+     */
+    private Mono<CallHistory> saveHistoryRecord(CallHistory history) {
+        return callHistoryRepository.save(history)
+                .subscribeOn(Schedulers.boundedElastic())
+                .timeout(timeoutConfig.getDatabaseOperation())
+                .doOnSuccess(saved -> log.info("Historial registrado: {} - {}", saved.getId(), saved.getEndpoint()))
+                .doOnError(e -> log.error("Error guardando historial: {}", e.getMessage()))
+                .onErrorResume(e -> Mono.empty());
+    }
+
+    /**
+     * Obtiene el historial de llamadas como una lista
+     */
     @Override
     public Mono<List<CallHistory>> getCallHistoryAsList(Pageable pageable) {
         return getCallHistory(pageable)
                 .collectList()
-                .doOnSuccess(history -> log.info("Retrieved {} call history records", history.size()))
-                .doOnError(error -> log.error("Error retrieving call history list: {}", error.getMessage()));
+                .doOnSuccess(history -> log.info("Recuperados {} registros de historial", history.size()));
     }
 
+    /**
+     * Obtiene el historial desde parámetros de página
+     */
     @Override
     public Mono<List<CallHistory>> getCallHistoryFromParams(Integer page, Integer size) {
-        Pageable pageable = pageableFactory.createPageable(page, size);
-        log.info("Created pageable for call history: page={}, size={}",
-                pageable.getPageNumber(), pageable.getPageSize());
-
-        return getCallHistoryAsList(pageable);
+        return Mono.justOrEmpty(page)
+                .zipWith(Mono.justOrEmpty(size).defaultIfEmpty(paginationConfig.getDefaultPageSize()))
+                .map(tuple -> pageableFactory.createPageable(tuple.getT1(), tuple.getT2()))
+                .defaultIfEmpty(pageableFactory.createPageable(
+                        paginationConfig.getDefaultPage(), 
+                        paginationConfig.getDefaultPageSize()))
+                .doOnNext(pageable -> log.info("Creado pageable: página={}, tamaño={}", 
+                        pageable.getPageNumber(), pageable.getPageSize()))
+                .flatMap(this::getCallHistoryAsList);
     }
 
-    private Mono<CallHistory> createHistoryRecord(String endpoint, String method, String parameters, String responseOrError, boolean successful) {
-        return Mono.fromCallable(() -> {
-            CallHistory.CallHistoryBuilder builder = CallHistory.builder()
-                    .timestamp(LocalDateTime.now())
-                    .endpoint(endpoint)
-                    .method(method)
-                    .parameters(parameters)
-                    .successful(successful);
-
-            if (successful) {
-                builder.response(responseOrError);
-            } else {
-                builder.error(responseOrError);
-            }
-
-            return builder.build();
-        });
+    /**
+     * Crea un objeto de historial de llamadas
+     */
+    private CallHistory buildHistoryRecord(String endpoint, String method, String parameters, String responseOrError, boolean successful) {
+        CallHistory.CallHistoryBuilder builder = CallHistory.builder()
+                .timestamp(LocalDateTime.now())
+                .endpoint(endpoint)
+                .method(method)
+                .parameters(parameters)
+                .successful(successful);
+                
+        if (successful) {
+            return builder.response(responseOrError).build();
+        } else {
+            return builder.error(responseOrError).build();
+        }
     }
 }

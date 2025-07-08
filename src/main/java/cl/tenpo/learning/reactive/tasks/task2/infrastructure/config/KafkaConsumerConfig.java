@@ -15,16 +15,16 @@ public class KafkaConsumerConfig {
     private final KafkaConfig kafkaConfig;
 
     @Bean
-    public ReceiverOptions<Object, Object> kafkaReceiverOptions() {
+    public ReceiverOptions<String, Map<String, String>> kafkaReceiverOptions() {
         Map<String, Object> consumerProps = kafkaConfig.createConsumerProperties();
-        ReceiverOptions<Object, Object> basicReceiverOptions = ReceiverOptions.create(consumerProps);
+        ReceiverOptions<String, Map<String, String>> basicReceiverOptions = ReceiverOptions.create(consumerProps);
         return basicReceiverOptions
                 .subscription(Collections.singleton(kafkaConfig.getRetryExhaustedTopic()));
     }
 
     @Bean
-    public ReactiveKafkaConsumerTemplate<Object, Object> reactiveKafkaConsumerTemplate(
-            ReceiverOptions<Object, Object> kafkaReceiverOptions) {
+    public ReactiveKafkaConsumerTemplate<String, Map<String, String>> reactiveKafkaConsumerTemplate(
+            ReceiverOptions<String, Map<String, String>> kafkaReceiverOptions) {
         return new ReactiveKafkaConsumerTemplate<>(kafkaReceiverOptions);
     }
 }

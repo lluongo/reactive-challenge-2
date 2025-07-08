@@ -24,7 +24,7 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASS}
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_HOST:localhost:9092}
     properties:
       security:
         protocol: ${KAFKA_SECURITY_PROTOCOL}
@@ -63,10 +63,19 @@ app:
     base-paths:
       functional: /learning-reactive/functional
       alternative: /learning-reactive/v2
-  
+    retry:
+      max-attempts: 2
+      initial-backoff: PT0.5S
+      max-backoff: PT2S
+      backoff-multiplier: 1.5
+    pagination:
+      default-page: 0
+      default-page-size: 10
+      max-page-size: 100
+
   # Configuración de timeouts
   timeouts:
-    external-api: PT20S
+    external-api: PT2S
     cache-operation: PT5S
     database-operation: PT10S
     
@@ -79,9 +88,9 @@ app:
   # Configuración de Retry
   retry:
     max-attempts: 3
-    initial-backoff: PT1S
-    max-backoff: PT10S
-    backoff-multiplier: 2.0
+    initial-backoff: PT0.5S
+    max-backoff: PT2S
+    backoff-multiplier: 1.5
     
   # Configuración de Schedulers
   schedulers:
@@ -113,6 +122,10 @@ app:
         - "/swagger"
         - "/v3/api-docs"
 
+  # Configuración de testing para probar que se punbliqu
+  testing:
+    force-external-api-error: false  # Flag para simular error en la API externa
+
 # Configuración de logging
 logging:
   level:
@@ -141,43 +154,34 @@ management:
       prometheus:
         enabled: true
 
----
-# Configuración específica para perfil local
-spring:
-  config:
-    activate:
-      on-profile: local
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: learning_reactive_mongo
-      username: mongodb
-      password: mongodb
-      authentication-database: admin
-    redis:
-      host: localhost
-      port: 6379
-  r2dbc:
-    url: r2dbc:postgresql://localhost:5432/learning_reactive_r2dbc?currentSchema=public
-    username: postgresql
-    password: postgresql
-    pool:
-      enabled: true
-      initial-size: 5
-      max-size: 10
-      max-idle-time: 30m
-  kafka:
-    bootstrap-servers: localhost:9092
-    properties:
-      security:
-        protocol: PLAINTEXT
-
-app:
-  retry:
-    max-attempts: 2
-    initial-backoff: PT0.5S
-  pagination:
-    default-page: 0
-    default-page-size: 10
-    max-page-size: 100
+#---
+## Configuración específica para perfil local
+#spring:
+#  config:
+#    activate:
+#      on-profile: local
+#  data:
+#    mongodb:
+#      host: localhost
+#      port: 27017
+#      database: learning_reactive_mongo
+#      username: mongodb
+#      password: mongodb
+#      authentication-database: admin
+#    redis:
+#      host: localhost
+#      port: 6379
+#  r2dbc:
+#    url: r2dbc:postgresql://localhost:5432/learning_reactive_r2dbc?currentSchema=public
+#    username: postgresql
+#    password: postgresql
+#    pool:
+#      enabled: true
+#      initial-size: 5
+#      max-size: 10
+#      max-idle-time: 30m
+#  kafka:
+#    bootstrap-servers: localhost:9092
+#    properties:
+#      security:
+#        protocol: PLAINTEXT

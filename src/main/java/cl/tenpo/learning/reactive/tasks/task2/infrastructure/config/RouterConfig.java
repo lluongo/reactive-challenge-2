@@ -24,7 +24,7 @@ public class RouterConfig {
     @Value("${app.api.endpoints.users}")
     private String usersEndpoint;
     
-    @Value("${app.api.endpoints.debug-ping}")
+    @Value("${app.api.endpoints.ping}")
     private String pingEndpoint;
     
     @Value("${app.api.base-paths.functional}")
@@ -41,11 +41,8 @@ public class RouterConfig {
         return RouterFunctions.route()
                 .path(functionalBasePath, builder -> builder
                         .GET(pingEndpoint, request -> ServerResponse.ok().bodyValue("Functional routes are working!"))
-                        
                         .POST(calculationEndpoint, calculationHandler::calculate)
-                        
                         .GET(historyEndpoint, historyHandler::getHistory)
-                        
                         .GET(usersEndpoint, userHandler::getAllUsers)
                         .POST(usersEndpoint, userHandler::createUser)
                         .GET(usersEndpoint + "/{id}", userHandler::getUserById)
