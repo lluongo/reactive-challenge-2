@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 public class AuthorizedUserController {
 
     private final AuthorizedUserService userService;
+    
     @GetMapping("${app.api.endpoints.users}")
     public Flux<AuthorizedUser> getAllUsers() {
         log.info("Request to get all authorized users");
@@ -48,8 +49,6 @@ public class AuthorizedUserController {
     @PostMapping("${app.api.endpoints.users}/{username}/activate")
     public Mono<AuthorizedUser> activateUser(@PathVariable String username) {
         log.info("Request to activate user: {}", username);
-        return userService.activateUser(username)
-                .doOnSuccess(user -> log.info("User activated successfully: {}", username))
-                .doOnError(e -> log.error("Error activating user: {}", e.getMessage()));
+        return userService.activateUser(username);
     }
 }

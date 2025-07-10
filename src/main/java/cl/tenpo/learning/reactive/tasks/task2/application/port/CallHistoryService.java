@@ -8,6 +8,8 @@ public interface CallHistoryService {
     
     Flux<CallHistory> getCallHistory(Pageable pageable);
     
+    Flux<CallHistory> getHistoryForAuthorizedUser(String username, Pageable pageable);
+    
     Mono<List<CallHistory>> getCallHistoryAsList(Pageable pageable);
     
     Mono<List<CallHistory>> getCallHistoryFromParams(Integer page, Integer size);
