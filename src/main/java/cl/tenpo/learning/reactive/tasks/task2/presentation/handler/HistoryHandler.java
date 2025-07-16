@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 public class HistoryHandler {
+
     private final CallHistoryService callHistoryService;
     private final ResponseFactory responseFactory;
     public Mono<ServerResponse> getHistory(ServerRequest request) {

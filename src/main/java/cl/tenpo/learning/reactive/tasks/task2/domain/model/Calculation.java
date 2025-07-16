@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Calculation {
+
     private BigDecimal number1;
     private BigDecimal number2;
     private BigDecimal percentage;

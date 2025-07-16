@@ -1,6 +1,6 @@
 package cl.tenpo.learning.reactive.tasks.task2.presentation.handler;
 
-import cl.tenpo.learning.reactive.tasks.task2.application.AuthorizedUserService;
+import cl.tenpo.learning.reactive.tasks.task2.application.port.AuthorizedUserService;
 import cl.tenpo.learning.reactive.tasks.task2.infrastructure.factory.ResponseFactory;
 import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.AuthorizedUserRequest;
 import lombok.RequiredArgsConstructor;

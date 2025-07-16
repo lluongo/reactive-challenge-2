@@ -24,6 +24,7 @@ public class CallHistory {
     private String response;
     private String error;
     private boolean successful;
+
     public static CallHistory createSuccessfulRecord(String endpoint, String method, String parameters, String response) {
         return CallHistory.builder()
                 .timestamp(LocalDateTime.now())
@@ -34,6 +35,7 @@ public class CallHistory {
                 .successful(true)
                 .build();
     }
+
     public static CallHistory createFailedRecord(String endpoint, String method, String parameters, String error) {
         return CallHistory.builder()
                 .timestamp(LocalDateTime.now())

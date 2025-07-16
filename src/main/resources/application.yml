@@ -124,7 +124,7 @@ app:
 
   # Configuración de testing para probar que se punbliqu
   testing:
-    force-external-api-error: false  # Flag para simular error en la API externa
+    force-external-api-error: true  # Flag para simular error en la API externa
 
 # Configuración de logging
 logging:
@@ -153,35 +153,3 @@ management:
     export:
       prometheus:
         enabled: true
-
-#---
-## Configuración específica para perfil local
-#spring:
-#  config:
-#    activate:
-#      on-profile: local
-#  data:
-#    mongodb:
-#      host: localhost
-#      port: 27017
-#      database: learning_reactive_mongo
-#      username: mongodb
-#      password: mongodb
-#      authentication-database: admin
-#    redis:
-#      host: localhost
-#      port: 6379
-#  r2dbc:
-#    url: r2dbc:postgresql://localhost:5432/learning_reactive_r2dbc?currentSchema=public
-#    username: postgresql
-#    password: postgresql
-#    pool:
-#      enabled: true
-#      initial-size: 5
-#      max-size: 10
-#      max-idle-time: 30m
-#  kafka:
-#    bootstrap-servers: localhost:9092
-#    properties:
-#      security:
-#        protocol: PLAINTEXT

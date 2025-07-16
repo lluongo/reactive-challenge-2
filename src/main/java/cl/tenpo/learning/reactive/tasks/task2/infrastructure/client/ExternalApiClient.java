@@ -19,44 +19,25 @@ import java.util.Optional;
 public class ExternalApiClient {
 
     private static final Logger log = LoggerFactory.getLogger(ExternalApiClient.class);
-    
+
     private final WebClient webClient;
     private final TimeoutConfig timeoutConfig;
     private final RetryStrategy retryStrategy;
-    
+
     @Value("${app.api.external.base-url}${app.api.external.percentage-path}")
     private String percentagePath;
 
     public Mono<BigDecimal> fetchPercentage() {
         log.info("Fetching percentage from external API: {}", percentagePath);
-        
+
         return webClient.get()
                 .uri(percentagePath)
                 .retrieve()
-                .bodyToMono(Map.class)
+                .bodyToMono(BigDecimal.class)
                 .timeout(timeoutConfig.getExternalApi())
                 .retryWhen(retryStrategy.getRetrySpec(BigDecimal.class))
-                .mapNotNull(this::extractPercentageFromResponse)
-                .doOnDiscard(Object.class, response -> 
-                    log.warn(" Respuesta sin porcentaje válido: {}", response))
-                .flatMap(this::parsePercentageReactively)
-                .doOnSubscribe(s -> log.info(" Iniciando llamada API: {}", percentagePath))
-                .doOnNext(value -> log.info(" Porcentaje obtenido: {}", value))
-                .doOnError(err -> log.error(" Error API: {}", err.toString()));
-    }
-
-    private String extractPercentageFromResponse(Map<String, Object> response) {
-        return Optional.ofNullable(response)
-                .map(r -> (String) r.get("percentage"))
-                .orElse(null);
-    }
-    
-    private Mono<BigDecimal> parsePercentageReactively(String percentageStr) {
-        return Mono.fromCallable(() -> new BigDecimal(percentageStr))
-                .onErrorResume(NumberFormatException.class, error -> {
-                    String normalizedStr = percentageStr.replace(',', '.');
-                    log.info("Converting comma format to decimal point: {} -> {}", percentageStr, normalizedStr);
-                    return Mono.fromCallable(() -> new BigDecimal(normalizedStr));
-                });
+                .doOnSubscribe(s -> log.info("Initiating API call: {}", percentagePath))
+                .doOnNext(value -> log.info("Percentage obtained: {}", value))
+                .doOnError(err -> log.error("Error fetching percentage: {}", err.getMessage(), err));
     }
 }

@@ -1,6 +1,6 @@
 package cl.tenpo.learning.reactive.tasks.task2.presentation.controller;
 
-import cl.tenpo.learning.reactive.tasks.task2.application.AuthorizedUserService;
+import cl.tenpo.learning.reactive.tasks.task2.application.port.AuthorizedUserService;
 import cl.tenpo.learning.reactive.tasks.task2.domain.model.AuthorizedUser;
 import cl.tenpo.learning.reactive.tasks.task2.presentation.dto.AuthorizedUserRequest;
 import jakarta.validation.Valid;
@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +18,7 @@ import java.time.LocalDateTime;
 public class AuthorizedUserController {
 
     private final AuthorizedUserService userService;
-    
+
     @GetMapping("${app.api.endpoints.users}")
     public Flux<AuthorizedUser> getAllUsers() {
         log.info("Request to get all authorized users");
@@ -45,7 +43,7 @@ public class AuthorizedUserController {
         log.info("Request to get user with id: {}", id);
         return userService.findUserById(id);
     }
-    
+
     @PostMapping("${app.api.endpoints.users}/{username}/activate")
     public Mono<AuthorizedUser> activateUser(@PathVariable String username) {
         log.info("Request to activate user: {}", username);

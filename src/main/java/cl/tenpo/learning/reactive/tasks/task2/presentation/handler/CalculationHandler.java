@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 public class CalculationHandler {
 
     private final CalculationService calculationService;
+
     public Mono<ServerResponse> calculate(ServerRequest request) {
         return request.bodyToMono(CalculationRequest.class)
                 .flatMap(calculationService::processCalculationRequest)

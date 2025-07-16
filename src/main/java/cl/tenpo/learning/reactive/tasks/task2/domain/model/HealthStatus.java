@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-/**
- * Entidad para comprobar el estado de la aplicación y la base de datos
- */
 @Data
 @Builder
 @NoArgsConstructor

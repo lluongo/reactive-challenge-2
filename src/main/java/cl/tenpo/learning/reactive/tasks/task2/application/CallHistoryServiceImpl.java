@@ -1,5 +1,6 @@
 package cl.tenpo.learning.reactive.tasks.task2.application;
 
+import cl.tenpo.learning.reactive.tasks.task2.application.port.AuthorizedUserService;
 import cl.tenpo.learning.reactive.tasks.task2.application.port.CallHistoryService;
 import cl.tenpo.learning.reactive.tasks.task2.domain.model.CallHistory;
 import cl.tenpo.learning.reactive.tasks.task2.infrastructure.config.PaginationConfig;

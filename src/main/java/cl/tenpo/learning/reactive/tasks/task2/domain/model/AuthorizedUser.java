@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Table("authorized_users")
 public class AuthorizedUser {
+
     @Id
     private Long id;
     private String username;
