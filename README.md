@@ -6,252 +6,287 @@ Aplicación reactiva desarrollada con **Spring WebFlux** que implementa un siste
 
 La aplicación cumple **100% de los requerimientos** del challenge, incluyendo todos los bonus, y está diseñada siguiendo principios **SOLID** y mejores prácticas de **programación reactiva**.
 
-## 🛠️ Cómo levantar la aplicación
+## 🧩 Arquitectura
 
-### Prerequisitos
-- Docker y Docker Compose instalados
-
-### Pasos para iniciar la aplicación
-
-1. **Compilar la aplicación para generar los archivos JAR**
-```bash
-# Navega al directorio del proyecto
-cd reactive-challenge-2
-
-# Compilar el proyecto
-./gradlew clean build
-```
-
-2. **Iniciar todos los servicios con Docker Compose**
-```bash
-# Inicia todos los servicios, incluyendo la aplicación
-docker-compose up -d
-```
-
-Con este comando se inician todos los servicios necesarios:
-- PostgreSQL para usuarios autorizados
-- MongoDB para historial de llamadas
-- Redis para caché reactiva
-- Kafka y Zookeeper para mensajería
-- La aplicación Spring WebFlux (api-luongo) conectada a todos estos servicios
-
-### Verificar que la aplicación está corriendo
-```bash
-# La aplicación debería estar disponible en el puerto 8083
-curl http://localhost:8083/learning-reactive/debug/ping
-```
-
-Respuesta esperada:
-```json
-{"message":"API is working!","timestamp":"2025-07-03T17:xx:xx"}
-```
-
-### Solo si necesitas ejecutar la aplicación localmente (sin Docker)
-```bash
-# Compilar el proyecto
-./gradlew clean build
-
-# Ejecutar la aplicación (asegúrate que los servicios de Docker estén corriendo)
-./gradlew bootRun
-
-# Para modo debug con más logs
-./gradlew bootRun --args='--debug'
-```
-
-## 📝 Requerimientos del Challenge y Cómo Probarlos
-
-### 1️⃣ Cálculo con porcentaje dinámico
-
-#### Requisitos
-- Endpoint REST que recibe dos números (num1 y num2)
-- Suma los números y aplica un porcentaje adicional obtenido de un servicio externo
-- El resultado debe ser (num1 + num2) + (num1 + num2) * porcentaje
-
-#### Cómo probar
-
-```bash
-# Realizar una solicitud al endpoint de cálculo
-curl -X POST -H "Content-Type: application/json" -d '{"number_1": 10.0, "number_2": 20.0}' http://localhost:8083/learning-reactive/calculation
-```
-
-Respuesta esperada:
-```json
-{"result":45.60,"num1":10.0,"num2":20.0}
-```
-
-> El resultado 45.60 indica que el servicio externo devolvió un porcentaje de 0.52 (52%)
-> Cálculo: (10 + 20) + (10 + 20) * 0.52 = 30 + 15.60 = 45.60
-
-### 2️⃣ Caché del porcentaje
-
-#### Requisitos
-- El porcentaje obtenido del servicio externo debe almacenarse en Redis
-- Si el servicio externo falla, se debe usar el último valor en caché
-- Si no hay valor en caché, la API debe responder con error HTTP adecuado
-
-#### Cómo probar
-
-```bash
-# 1. Limpiar la caché de Redis
-curl -X DELETE http://localhost:8083/learning-reactive/debug/clear-cache
-
-# 2. Realizar una solicitud al endpoint de cálculo - Debería fallar con timeout o usar caché
-curl -X POST -H "Content-Type: application/json" -d '{"number_1": 15.0, "number_2": 25.0}' http://localhost:8083/learning-reactive/calculation
-
-# 3. Realizar otra solicitud - Debería usar el valor en caché si se pudo obtener en el paso anterior
-curl -X POST -H "Content-Type: application/json" -d '{"number_1": 5.0, "number_2": 10.0}' http://localhost:8083/learning-reactive/calculation
-```
-
-> Si la respuesta es un error 503 Service Unavailable, significa que no había valor en caché y el servicio externo falló
-> Si la respuesta es un cálculo exitoso, significa que se usó el valor en caché
-
-### 3️⃣ Reintentos ante fallos del servicio externo
-
-#### Requisitos
-- Implementar lógica de reintento con máximo 3 intentos
-- Si después de los reintentos sigue fallando, enviar evento a Kafka
-- Consumir el evento de Kafka y loguearlo
-
-#### Cómo probar
-
-```bash
-# 1. Ajustar los timeouts para forzar errores (Ya configurado en application.yml)
-# timeout de API externo: 2 segundos
-# backoff inicial: 0.5 segundos
-# backoff máximo: 2 segundos
-
-# 2. Limpiar caché y hacer una solicitud para forzar reintentos
-curl -X DELETE http://localhost:8083/learning-reactive/debug/clear-cache
-curl -X POST -H "Content-Type: application/json" -d '{"number_1": 7.5, "number_2": 12.5}' http://localhost:8083/learning-reactive/calculation
-```
-
-> Verificar en los logs de la aplicación:
-> 1. Mensajes de reintento: "ABOUT TO RETRY #1/2 FOR BigDecimal"
-> 2. Mensaje de retry agotado: "RETRY EXHAUSTED FOR BigDecimal"
-> 3. Publicación del evento: "RETRY EXHAUSTED EVENT RECEIVED"
-> 4. Mensaje de Kafka: "RECEIVED MESSAGE FROM TOPIC CR_RETRY_EXHAUSTED"
-
-### 4️⃣ API de usuarios autorizados
-
-#### Requisitos
-- Endpoints REST para alta y baja de usuarios autorizados
-- Los usuarios deben guardarse en PostgreSQL usando R2DBC
-
-#### Cómo probar
-
-```bash
-# 1. Crear un nuevo usuario
-curl -X POST -H "Content-Type: application/json" -d '{"username":"testuser","email":"test@example.com"}' http://localhost:8083/learning-reactive/users
-
-# 2. Obtener todos los usuarios
-curl -X GET http://localhost:8083/learning-reactive/users
-
-# 3. Obtener un usuario específico por ID (reemplazar {id} con un ID válido)
-curl -X GET http://localhost:8083/learning-reactive/users/{id}
-
-# 4. Desactivar un usuario (reemplazar {id} con un ID válido)
-curl -X DELETE http://localhost:8083/learning-reactive/users/{id}
-```
-
-### 5️⃣ Bonus: Historial de llamadas
-
-#### Requisitos
-- Endpoint para consultar historial de llamadas a la API
-- El registro debe ser asíncrono y almacenado en MongoDB
-- Solo usuarios autorizados pueden acceder al historial
-
-#### Cómo probar
-
-```bash
-# Consultar el historial de llamadas
-curl -X GET http://localhost:8083/learning-reactive/history
-```
-
-Respuesta esperada:
-```json
-[
-  {
-    "id":"...",
-    "timestamp":[2025,7,3,17,xx,xx],
-    "endpoint":"/learning-reactive/calculation",
-    "method":"POST",
-    "parameters":"{\"number_1\": 10.0, \"number_2\": 20.0}",
-    "response":"...",
-    "successful":true
-  },
-  ...
-]
-```
-
-### 6️⃣ Bonus: Manejo de errores HTTP
-
-#### Requisitos
-- Validaciones de input en los endpoints
-- Manejo adecuado de errores HTTP (4XX y 5XX)
-
-#### Cómo probar
-
-```bash
-# 1. Probar error de validación enviando formato incorrecto
-curl -X POST -H "Content-Type: application/json" -d '{"num1": 10.0, "num2": 20.0}' http://localhost:8083/learning-reactive/calculation
-
-# 2. Probar error de servicio (después de limpiar caché)
-curl -X DELETE http://localhost:8083/learning-reactive/debug/clear-cache
-curl -X POST -H "Content-Type: application/json" -d '{"number_1": 10.0, "number_2": 20.0}' http://localhost:8083/learning-reactive/calculation
-```
-
-## 🧪 Ejecución de Tests
-
-```bash
-# Ejecutar todos los tests
-./gradlew test
-
-# Ejecutar solo tests unitarios
-./gradlew test --tests "*UnitTest"
-
-# Ejecutar solo tests de integración
-./gradlew test --tests "*IntegrationTest"
-```
-
-## 📚 Arquitectura y Tecnologías
-
-### Tecnologías utilizadas
-- **Spring WebFlux**: Framework reactivo para aplicaciones web
-- **Project Reactor**: Biblioteca reactiva para Java
-- **R2DBC**: API reactiva para acceso a bases de datos relacionales
-- **MongoDB Reactive**: Driver reactivo para MongoDB
-- **Redis Reactive**: Cliente reactivo para Redis
-- **Kafka Reactive**: Cliente reactivo para Apache Kafka
-
-### Patrones de diseño implementados
-- **Factory Pattern**: Para creación de objetos de configuración y respuestas HTTP
-- **Strategy Pattern**: Para diferentes estrategias de reintentos y manejo de errores
-- **Repository Pattern**: Para acceso a datos de manera reactiva
-- **Circuit Breaker Pattern**: Para protección contra fallos en servicios externos
-
-### Principios SOLID aplicados
-- **Single Responsibility Principle**: Cada componente tiene una única responsabilidad
-- **Open/Closed Principle**: Extensión sin modificación a través de interfaces y configuración
-- **Dependency Inversion Principle**: Dependencia de abstracciones, no de implementaciones
-
-## 🔍 Estructura del Proyecto
+El proyecto implementa una **arquitectura hexagonal** con las siguientes capas:
 
 ```
 src/main/java/cl/tenpo/learning/reactive/tasks/task2/
-├── application/           # Capa de aplicación (servicios)
-├── domain/                # Modelos y entidades de dominio
-├── infrastructure/        # Adaptadores e infraestructura
-│   ├── boot/             # Inicialización de componentes
-│   ├── cache/            # Servicios de caché (Redis)
-│   ├── client/           # Clientes HTTP reactivos
-│   ├── config/           # Configuraciones
-│   ├── event/            # Eventos y listeners
-│   ├── exception/        # Manejo global de errores
-│   ├── factory/          # Factories para creación de objetos
-│   ├── filter/           # Filtros web reactivos
-│   ├── persistence/      # Repositorios reactivos
-│   └── retry/            # Estrategias de reintentos
-└── presentation/         # Capa de presentación
-    ├── controller/       # Controladores REST
-    ├── dto/              # Objetos de transferencia de datos
-    └── handler/          # Handlers funcionales
+├── application/          # Servicios de aplicación
+├── domain/               # Modelos de dominio
+├── infrastructure/       # Adaptadores (cache, client, config)
+└── presentation/         # Controladores y handlers
+```
+
+### 🏗️ Patrones de Diseño Implementados
+
+- **Factory Pattern**: Para creación de objetos Pageable, respuestas HTTP
+- **Strategy Pattern**: Para configuración de retry y paginación
+- **Bulkhead Pattern**: Schedulers dedicados para diferentes tipos de operaciones
+- **Patrones de Resilencia**: Reintentos con backoff, fallbacks, publicación de eventos
+
+## 🛠️ Cómo levantar la aplicación
+
+### Prerrequisitos
+
+- Java 21+
+- Docker y Docker Compose
+
+### Pasos para iniciar la aplicación
+
+1. **Iniciar los servicios requeridos**:
+
+```bash
+docker-compose up -d
+```
+
+2. **Ejecutar la aplicación**:
+
+```bash
+./gradlew bootRun
+```
+
+La aplicación estará disponible en `http://localhost:8083/learning-reactive/`
+
+## 🔍 Endpoints principales
+
+### 🧮 Endpoint de cálculo
+
+```
+POST /learning-reactive/calculation
+```
+
+Recibe dos números, los suma y aplica un porcentaje dinámico.
+
+**Request body**:
+```json
+{
+    "number_1": 10,
+    "number_2": 20
+}
+```
+
+**Response (200 OK)**:
+```json
+{
+    "result": 33.0,
+    "operation_detail": "(10 + 20) + 10% = 33.0"
+}
+```
+
+### 👥 API de usuarios
+
+```
+POST /learning-reactive/users
+GET /learning-reactive/users
+GET /learning-reactive/users/{id}
+DELETE /learning-reactive/users/{id}
+POST /learning-reactive/users/{username}/activate
+```
+
+### 📜 API de historial
+
+```
+GET /learning-reactive/history?username={username}
+```
+
+> ⚠️ Requiere un usuario autorizado para acceder.
+
+## ✨ Características principales
+
+### 📝 Programación reactiva pura
+
+- Uso de **Flux** y **Mono** de Project Reactor
+- **Pipelines declarativos** con operadores reactivos (filter, switchIfEmpty, onErrorResume)
+- **Context propagation** para trazabilidad de solicitudes
+
+### 💾 Persistencia reactiva
+
+- **MongoDB reactivo** para el historial de llamadas
+- **PostgreSQL con R2DBC** para usuarios autorizados
+- **Redis reactivo** para caché de porcentaje
+
+### 📊 Resiliencia y rendimiento
+
+- **Reintentos configurables** con backoff exponencial
+- **Caché distribuida** con Redis para valores de porcentaje
+- **Circuit breaker** para protección ante fallos de API externa
+- **Publicación de eventos** en Kafka cuando se agotan los reintentos
+
+## 🧪 Cómo probar los requerimientos
+
+### 1️⃣ Cálculo con porcentaje dinámico
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"number_1": 10, "number_2": 20}' http://localhost:8083/learning-reactive/calculation
+```
+
+### 2️⃣ Probando mecanismos de resiliencia: caché y reintentos
+
+La aplicación incluye una funcionalidad especial para probar los mecanismos de resiliencia a través de la propiedad `force-external-api-error` en `application.yml`.
+
+#### 🔄 Prueba de reintentos y fallback a caché
+
+1. **Configura el comportamiento de error**:
+
+   Modifica en `application.yml`:
+   ```yaml
+   app:
+     testing:
+       force-external-api-error: true  # Forzar error en API externa
+   ```
+
+2. **Primer intento**: La aplicación intentará obtener el porcentaje de la API externa, fallará (3 reintentos), y como no hay valor en caché, responderá con un error:
+
+   ```bash
+   curl -X POST -H "Content-Type: application/json" -d '{"number_1": 10, "number_2": 20}' http://localhost:8083/learning-reactive/calculation
+   ```
+
+   **Respuesta esperada**: Error 503 Service Unavailable
+
+3. **Ahora cambia la configuración** para que la API externa funcione:
+
+   ```yaml
+   app:
+     testing:
+       force-external-api-error: false  # API externa responde correctamente
+   ```
+
+4. **Reinicia la aplicación** y haz una solicitud:
+
+   ```bash
+   curl -X POST -H "Content-Type: application/json" -d '{"number_1": 10, "number_2": 20}' http://localhost:8083/learning-reactive/calculation
+   ```
+
+   **Respuesta esperada**: Resultado exitoso (el porcentaje se almacena en caché)
+
+5. **Vuelve a configurar** para forzar errores:
+
+   ```yaml
+   app:
+     testing:
+       force-external-api-error: true  # Forzar error nuevamente
+   ```
+
+6. **Reinicia y haz otra solicitud**:
+
+   ```bash
+   curl -X POST -H "Content-Type: application/json" -d '{"number_1": 10, "number_2": 20}' http://localhost:8083/learning-reactive/calculation
+   ```
+
+   **Respuesta esperada**: Resultado exitoso usando el valor en caché
+
+#### 📝 Verificación del historial de eventos
+
+Para verificar que se están publicando eventos en Kafka cuando se agotan los reintentos:
+
+1. **Verifica el historial de llamadas**:
+
+   ```bash
+   # Primero crea un usuario
+   curl -X POST -H "Content-Type: application/json" -d '{"username":"testuser","email":"test@example.com"}' http://localhost:8083/learning-reactive/users
+
+   # Activa el usuario
+   curl -X POST http://localhost:8083/learning-reactive/users/testuser/activate
+
+   # Consulta el historial
+   curl -X GET "http://localhost:8083/learning-reactive/history?username=testuser"
+   ```
+
+2. **Observa los logs** de la aplicación para ver los mensajes de Kafka relacionados con eventos de reintentos agotados.
+
+### 3️⃣ Probando la API de usuarios autorizados
+
+```bash
+# Crear usuario
+curl -X POST -H "Content-Type: application/json" -d '{"username":"newuser","email":"new@example.com"}' http://localhost:8083/learning-reactive/users
+
+# Listar usuarios
+curl -X GET http://localhost:8083/learning-reactive/users
+
+# Obtener un usuario por ID
+curl -X GET http://localhost:8083/learning-reactive/users/1
+
+# Desactivar un usuario
+curl -X DELETE http://localhost:8083/learning-reactive/users/1
+```
+
+### 4️⃣ Probando rutas funcionales
+
+La aplicación también implementa rutas funcionales como bonus:
+
+```bash
+# Endpoint de ping
+curl -X GET http://localhost:8083/learning-reactive/functional/ping
+
+# Endpoint alternativo de cálculo
+curl -X POST -H "Content-Type: application/json" -d '{"number_1": 10, "number_2": 20}' http://localhost:8083/learning-reactive/v2/calc
+```
+
+## 📊 Métricas y monitoreo
+
+La aplicación expone endpoints de Actuator para monitoreo y diagnóstico en tiempo real:
+
+### 🩺 Health Check
+
+```bash
+curl -X GET "http://localhost:8083/learning-reactive/actuator/health"
+```
+
+**Respuesta:**
+```json
+{
+  "status": "UP",
+  "components": {
+    "diskSpace": {"status": "UP", ...},
+    "mongo": {"status": "UP", ...},
+    "ping": {"status": "UP"},
+    "r2dbc": {"status": "UP", ...},
+    "redis": {"status": "UP", ...}
+  }
+}
+```
+
+El estado `UP` confirma que todos los componentes están funcionando correctamente.
+
+### 📈 Métricas disponibles
+
+```bash
+curl -X GET "http://localhost:8083/learning-reactive/actuator/metrics"
+```
+
+Para consultar una métrica específica:
+
+```bash
+# Ejemplo: Uso de memoria JVM
+curl -X GET "http://localhost:8083/learning-reactive/actuator/metrics/jvm.memory.used"
+
+# Ejemplo: Solicitudes HTTP
+curl -X GET "http://localhost:8083/learning-reactive/actuator/metrics/http.server.requests"
+
+# Ejemplo: Comandos de Redis
+curl -X GET "http://localhost:8083/learning-reactive/actuator/metrics/lettuce.command.completion"
+```
+
+### 🔍 Métricas útiles para los mecanismos de resiliencia
+
+- **Pool de conexiones R2DBC**: `r2dbc.pool.acquired`, `r2dbc.pool.pending`
+- **Comandos MongoDB**: `mongodb.driver.commands`
+- **Tiempos de respuesta de caché**: `lettuce.command.completion`
+- **Estado de hilos**: `jvm.threads.states`
+
+> ℹ️ **Nota**: Para usar Actuator, asegúrate de incluir la dependencia `spring-boot-starter-actuator` en tu `build.gradle`.
+
+## 🧠 Decisiones técnicas
+
+- **Pipelines declarativos**: Eliminación de if/else por operadores reactivos
+- **Schedulers dedicados**: Para operaciones de DB, API, caché y logging
+- **Externalización de configuración**: Timeouts, retry, schedulers configurables
+- **Manejo de errores avanzado**: Respuestas HTTP estandarizadas y context propagation
+- **Logging estructurado**: Con contexto reactivo y no bloqueante
+
+## 📚 Referencias
+
+- [Project Reactor Reference](https://projectreactor.io/docs/core/release/reference/)
+- [Spring WebFlux Documentation](https://docs.spring.io/spring-framework/reference/web/webflux.html)
+- [R2DBC Documentation](https://r2dbc.io/)

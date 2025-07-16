@@ -35,6 +35,7 @@ dependencies {
     implementation (group: 'org.springframework.kafka', name: 'spring-kafka')
     implementation (group: 'io.projectreactor.kafka', name:'reactor-kafka', version: "$kafka")
     implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-validation')
+    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-actuator')
     implementation (group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.4')
     implementation ('io.netty:netty-resolver-dns-native-macos:4.1.94.Final:osx-aarch_64')
 
