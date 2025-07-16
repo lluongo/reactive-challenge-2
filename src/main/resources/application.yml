@@ -61,8 +61,8 @@ app:
       base-url: http://localhost:8083/learning-reactive
       percentage-path: /external-api/percentage
     base-paths:
-      functional: /learning-reactive/functional
-      alternative: /learning-reactive/v2
+      functional: /functional
+      alternative: /v2
     retry:
       max-attempts: 2
       initial-backoff: PT0.5S
