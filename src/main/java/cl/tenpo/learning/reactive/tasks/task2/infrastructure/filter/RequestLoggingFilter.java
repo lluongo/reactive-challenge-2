@@ -56,6 +56,7 @@ public class RequestLoggingFilter implements WebFilter {
     private boolean isExcludedPath(String path) {
         return excludedPaths.stream().anyMatch(path::startsWith);
     }
+    
     @SneakyThrows
     private Mono<Void> recordRequest(String endpoint, String method, String parameters, String response, int statusCode) {
         return Mono.just(statusCode)

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2025-07-16T15:37:04" hostname="LUCLUO0225M" time="0.667">
+<testsuite name="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2025-07-16T16:30:37" hostname="LUCLUO0225M" time="0.784">
   <properties/>
-  <testcase name="calculateWithPercentageWithZeroPercentageShouldReturnSumOnly()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.658"/>
+  <testcase name="calculateWithPercentageWithZeroPercentageShouldReturnSumOnly()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.775"/>
   <testcase name="calculateWithPercentageWithValidPercentageShouldApplyPercentageCorrectly()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.001"/>
   <testcase name="calculateWithPercentageWithErrorFromPercentageServiceShouldPropagateError()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.001"/>
-  <testcase name="processCalculationRequestShouldCalculateCorrectly()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.004"/>
-  <system-out><![CDATA[[Test worker] 2025-07-16 12:37:05 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - ]]>&#x1f6e0;<![CDATA[️ Processing request: CalculationRequest(num1=10.0, num2=5.0) 
-[Test worker] 2025-07-16 12:37:05 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - ]]>&#x1f3af;<![CDATA[ Calculation successful: 16.50 
+  <testcase name="processCalculationRequestShouldCalculateCorrectly()" classname="cl.tenpo.learning.reactive.tasks.task2.application.CalculationServiceTest" time="0.003"/>
+  <system-out><![CDATA[[Test worker] 2025-07-16 13:30:37 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - ]]>&#x1f6e0;<![CDATA[️ Processing request: CalculationRequest(num1=10.0, num2=5.0) 
+[Test worker] 2025-07-16 13:30:37 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.a.CalculationServiceImpl?[0;39m - ]]>&#x1f3af;<![CDATA[ Calculation successful: 16.50 
 ]]></system-out>
   <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (/Users/lucas.luongo/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.14.19/154da3a65b4f4a909d3e5bdec55d1b2b4cbb6ce1/byte-buddy-agent-1.14.19.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning

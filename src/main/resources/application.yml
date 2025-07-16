@@ -63,28 +63,19 @@ app:
     base-paths:
       functional: /functional
       alternative: /v2
-    retry:
-      max-attempts: 2
-      initial-backoff: PT0.5S
-      max-backoff: PT2S
-      backoff-multiplier: 1.5
-    pagination:
-      default-page: 0
-      default-page-size: 10
-      max-page-size: 100
 
   # Configuración de timeouts
   timeouts:
     external-api: PT2S
     cache-operation: PT5S
     database-operation: PT10S
-    
+     
   # Configuración de Paginación
   pagination:
     default-page: 0
     default-page-size: 10
     max-page-size: 100
-    
+     
   # Configuración de Retry
   retry:
     max-attempts: 3
@@ -114,15 +105,7 @@ app:
     topics:
       retry-exhausted: CR_RETRY_EXHAUSTED
 
-  # Configuración de filtros
-  filters:
-    logging:
-      excluded-paths:
-        - "/actuator"
-        - "/swagger"
-        - "/v3/api-docs"
-
-  # Configuración de testing para probar que se punbliqu
+  # Configuración de testing para probar que se publique
   testing:
     force-external-api-error: true  # Flag para simular error en la API externa
 

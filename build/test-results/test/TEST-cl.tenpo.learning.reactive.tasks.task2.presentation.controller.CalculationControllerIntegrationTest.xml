@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="cl.tenpo.learning.reactive.tasks.task2.presentation.controller.CalculationControllerIntegrationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-07-16T15:37:05" hostname="LUCLUO0225M" time="0.056">
+<testsuite name="cl.tenpo.learning.reactive.tasks.task2.presentation.controller.CalculationControllerIntegrationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-07-16T16:30:37" hostname="LUCLUO0225M" time="0.075">
   <properties/>
-  <testcase name="calculate_shouldReturnCorrectResult()" classname="cl.tenpo.learning.reactive.tasks.task2.presentation.controller.CalculationControllerIntegrationTest" time="0.054"/>
+  <testcase name="calculate_shouldReturnCorrectResult()" classname="cl.tenpo.learning.reactive.tasks.task2.presentation.controller.CalculationControllerIntegrationTest" time="0.073"/>
   <testcase name="calculate_withValidInputs_shouldProcessCorrectly()" classname="cl.tenpo.learning.reactive.tasks.task2.presentation.controller.CalculationControllerIntegrationTest" time="0.002"/>
-  <system-out><![CDATA[[Test worker] 2025-07-16 12:37:05 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.p.c.CalculationController?[0;39m - Received calculation request [test-request-id]: CalculationRequest(num1=10, num2=5) 
-[Test worker] 2025-07-16 12:37:05 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.p.c.CalculationController?[0;39m - Calculation request [test-request-id] completed: CalculationResponse(result=16.5, num1=10, num2=5) 
-[Test worker] 2025-07-16 12:37:05 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.p.c.CalculationController?[0;39m - Received calculation request [test-request-id]: CalculationRequest(num1=20, num2=30) 
-[Test worker] 2025-07-16 12:37:05 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.p.c.CalculationController?[0;39m - Calculation request [test-request-id] completed: CalculationResponse(result=75.0, num1=20, num2=30) 
+  <system-out><![CDATA[[Test worker] 2025-07-16 13:30:37 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.p.c.CalculationController?[0;39m - Received calculation request [test-request-id]: CalculationRequest(num1=10, num2=5) 
+[Test worker] 2025-07-16 13:30:37 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.p.c.CalculationController?[0;39m - Calculation request [test-request-id] completed: CalculationResponse(result=16.5, num1=10, num2=5) 
+[Test worker] 2025-07-16 13:30:37 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.p.c.CalculationController?[0;39m - Received calculation request [test-request-id]: CalculationRequest(num1=20, num2=30) 
+[Test worker] 2025-07-16 13:30:37 ?[34mINFO ?[0;39m ?[36mc.t.l.r.t.t.p.c.CalculationController?[0;39m - Calculation request [test-request-id] completed: CalculationResponse(result=75.0, num1=20, num2=30) 
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
